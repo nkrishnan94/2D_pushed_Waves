@@ -15,7 +15,7 @@
 
 unsigned long K  = 1000;
 unsigned int n_gens = 100;
-const int n_demes = 300; 
+const int n_demes = 1000; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B = 2;
@@ -82,7 +82,8 @@ float calcHet(long double arr[][n_demes][n_spec], const int arrSize){
 
 }
 
-
+long double deme[n_demes][n_demes][n_spec] = {{0}};
+long double deme_aux[n_demes][n_demes][n_spec] = {{0}};
 
 
 
@@ -108,8 +109,7 @@ int main (int argc, char * argv[]){
 
 	const gsl_rng_type * T;
 	gsl_rng * r;
-	long double deme[n_demes][n_demes][n_spec] = {{0}};
-	long double deme_aux[n_demes][n_demes][n_spec] = {{0}};
+
 
 
 	gsl_rng_env_setup();
@@ -122,7 +122,7 @@ int main (int argc, char * argv[]){
 	unsigned int new_cnt[n_spec + 1];
 	//int n_data = 1000;
 	//int record_time = int(n_gens/n_data);
-	int record_time = 10;
+	int record_time = 5;
 	int n_data = int(n_gens/record_time);
 
 	double pop_shift = 0.0;
@@ -135,12 +135,14 @@ int main (int argc, char * argv[]){
 	//data files
 	ofstream flog, fpop, fhet, fprof;
 	time_t time_start;
+	clock_t c_init = clock();
 	struct tm * timeinfo;
 	char buffer [80];
 
 
     time (&time_start);
 	timeinfo = localtime (&time_start);
+
 
 	strftime (buffer,80,"%F-%H-%M-%S",timeinfo);
 
@@ -171,7 +173,7 @@ int main (int argc, char * argv[]){
 
 
 
-	/*for(int i = 0; i < int(n_demes*.5); i++){
+	for(int i = 0; i < int(n_demes*.5); i++){
 		for(int j = 0; j < int(n_demes); j++){
 
 		deme[i][j][0] = .5*K;
@@ -181,7 +183,7 @@ int main (int argc, char * argv[]){
 		}
 
 
-	}*/
+	}
 	//initial population in middle
 	deme[int(n_demes/2)][int(n_demes/2)][0] = .5*K;
 	deme[int(n_demes/2)][int(n_demes/2)][1] = .5*K;
@@ -211,8 +213,8 @@ int main (int argc, char * argv[]){
 				int neighbs[4][2];
 
 				for(int ne=0; ne <4; ne++){
-					neighbs[ne][0] = (arr[0] + neighb_vec[ne][0]) % n_demes;
-					neighbs[ne][1] = (arr[1] + neighb_vec[ne][1]) % n_demes;
+					neighbs[ne][0] = (arr[0] + n_demes+neighb_vec[ne][0]) % n_demes;
+					neighbs[ne][1] = (arr[1] + n_demes+neighb_vec[ne][1]) % n_demes;
 
 
 
@@ -352,13 +354,13 @@ int main (int argc, char * argv[]){
 
     }
 
-    time_t time_end;
-    double run_time = double(time_start- time_end)/CLOCKS_PER_SEC;
+    clock_t c_fin = clock();
+    double run_time = double(c_fin - c_init)/CLOCKS_PER_SEC;
 
 
 
     flog << "Number of generations, Number of species, Growth rate, Migration rate, B, Number of demes, Start time, Elapsed run time (secs_" << endl;
-    flog << n_gens << ", " <<  n_spec << ", " << g0 << ", " << M << ", " << n_demes << time_start<< endl;
+    flog << n_gens << ", " <<  n_spec << ", " << g0 << ", " << M << ", " << n_demes << time_start<< run_time<< endl;
 
     fhet.close();
     fpop.close();
