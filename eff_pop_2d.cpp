@@ -13,9 +13,9 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 100;
+unsigned long K  = 1000;
 unsigned int n_gens = 100;
-const int n_demes = 150; 
+const int n_demes = 300; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B = 2;
@@ -62,7 +62,7 @@ float calcHet(long double arr[][n_demes][n_spec], const int arrSize){
 
 			//std::cout << i << "\n";
 			if (deme_pop > 0.0){
-				H += (2*arr[i][j][0]*(deme_pop - arr[i][0][j]))/(deme_pop*deme_pop);
+				H += (2*arr[i][j][0]*(deme_pop - arr[i][j][0]))/(deme_pop*deme_pop);
 				//std::cout << arr[i][0] << "\n";
 				//std::cout << (2*arr[i][0]*(deme_pop - arr[i][0]))/(deme_pop*deme_pop)<< "\n";
 				cnt+=1;
@@ -171,7 +171,7 @@ int main (int argc, char * argv[]){
 
 
 
-	for(int i = 0; i < int(n_demes*.5); i++){
+	/*for(int i = 0; i < int(n_demes*.5); i++){
 		for(int j = 0; j < int(n_demes); j++){
 
 		deme[i][j][0] = .5*K;
@@ -181,7 +181,10 @@ int main (int argc, char * argv[]){
 		}
 
 
-	}
+	}*/
+	//initial population in middle
+	deme[int(n_demes/2)][int(n_demes/2)][0] = .5*K;
+	deme[int(n_demes/2)][int(n_demes/2)][1] = .5*K;
 
 
 
@@ -205,33 +208,28 @@ int main (int argc, char * argv[]){
 			for(int j = 0; j < n_demes; j++){
 				int arr[2] = {i, j};
 				int neighb_vec[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
-				std::vector<std::vector <int> > neighbs;
+				int neighbs[4][2];
 
-	
 				for(int ne=0; ne <4; ne++){
+					neighbs[ne][0] = (arr[0] + neighb_vec[ne][0]) % n_demes;
+					neighbs[ne][1] = (arr[1] + neighb_vec[ne][1]) % n_demes;
 
-					if( ((arr[0] + neighb_vec[ne][0])<n_demes && (arr[0] + neighb_vec[ne][0])>= 0 )&& ((arr[1] + neighb_vec[ne][1])<n_demes && (j + neighb_vec[ne][1])>= 0 )){
-						std::vector<int> temp;
-						for(int a=0; a<2; a++){
-							temp.push_back(int(arr[a] + neighb_vec[ne][a]));
-						}
-
-						neighbs.push_back(temp);
-
-
-					}
 
 
 				}
+
+
+	
+
 
 
 
 
 				long double f1 = deme[i][j][0]/int(K);
 				long double f2 = deme[i][j][1]/int(K);
-				f1 = (1 - M*(neighbs.size()/4))*f1;
-				f2 = (1 - M*(neighbs.size()/4))*f2; 
-				for(int ne = 0; ne <neighbs.size(); ne++){
+				f1 = (1 - M)*f1;
+				f2 = (1 - M)*f2; 
+				for(int ne = 0; ne <4; ne++){
 
 					f1+= (M/4)*deme_aux[neighbs[ne][0]][neighbs[ne][1]][0]/int(K);
 					f2+= (M/4)*deme_aux[neighbs[ne][0]][neighbs[ne][1]][1]/int(K);
@@ -263,7 +261,7 @@ int main (int argc, char * argv[]){
 
 
 
-		if (sumDeme(deme,n_demes)/(K*n_demes) > .5*n_demes*n_demes){
+		/*if (sumDeme(deme,n_demes)/(K*n_demes) > .5*n_demes*n_demes){
 			int shift =  int(sumDeme(deme,n_demes)/K - .5*n_demes)+1;
 			if ((shift< 0) == true){
 
@@ -304,10 +302,10 @@ int main (int argc, char * argv[]){
 
 
 
-		}
+		}*/
 
 
-		cout << dt << endl;
+		//cout << dt << endl;
 		//cout << record_time << endl;
 		if (dt % record_time == 0){
 
@@ -348,7 +346,7 @@ int main (int argc, char * argv[]){
     for(int i=0;i < n_demes; i++){
     	for(int j =0;j < n_demes; j++){
 
-    		fprof << i << ", " << j<< ", " << deme[i][0] << ", "  << deme[i][1] << endl;
+    		fprof << i << ", " << j<< ", " << deme[i][j][0] << ", "  << deme[i][j][1] << endl;
 
 		}
 
