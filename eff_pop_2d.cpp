@@ -13,9 +13,9 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 3000;
+unsigned long K  = 10000;
 unsigned int n_gens = 3000;
-const int n_demes = 400; 
+const int n_demes = 500; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B = 8;
@@ -52,7 +52,6 @@ float calcHet(long double arr[][n_demes][n_spec], const int arrSize){
 
 
 
-
 	int cnt =  0 ;
 	long double H = 0.0;
 
@@ -78,9 +77,55 @@ float calcHet(long double arr[][n_demes][n_spec], const int arrSize){
 
 
 
-
-
 	return  H/cnt;
+
+}
+
+
+float calcVarHet(long double arr[][n_demes][n_spec], const int arrSize){
+
+	long double hets[n_demes][n_demes];
+	long double H = 0.0;
+	long double varH = 0.0;
+	int cnt=0;
+	float average;
+
+
+	for(int i = 0; i < arrSize; i++){
+		for(int j=0; j<arrSize;j++){
+
+			double deme_pop = arr[i][j][0]+arr[i][j][1];
+			//std::cout << i << "\n";
+			if (deme_pop > 0.0){
+				hets[i][j]= (2*arr[i][j][0]*arr[i][j][1])/(deme_pop*deme_pop);
+				H+=hets[i][j];
+				cnt+=1;
+				//std::cout << arr[i][0] << "\n";
+				//std::cout << (2*arr[i][0]*(deme_pop - arr[i][0]))/(deme_pop*deme_pop)<< "\n";
+			}
+
+		}
+	}
+
+	average =  H/cnt;
+	cnt=0;
+	for(int i = 0; i < arrSize; i++){
+		for(int j=0; j<arrSize;j++){
+			double deme_pop = arr[i][j][0]+arr[i][j][1];
+			if (deme_pop > 0.0){
+				varH+= (hets[i][j]-average)*(hets[i][j]-average);
+				cnt+=1;
+
+
+
+			}
+
+		}
+	}
+
+	
+
+	return  varH/cnt;
 
 }
 
@@ -112,12 +157,12 @@ int main (int argc, char * argv[]){
             fast_samp_flag = atoi(optarg); // growth rate
 
     }
-    if ((B >= 2))
+    /*if ((B >= 2))
     n_gens = 1*K;
 
 
 	if ((B < 2))
-	    n_gens = 15*int(sqrt(K));
+	    n_gens = 15*int(sqrt(K));*/
 
 
 	const gsl_rng_type * T;
@@ -135,7 +180,7 @@ int main (int argc, char * argv[]){
 	unsigned int new_cnt[n_spec + 1];
 	//int n_data = 1000;
 	//int record_time = int(n_gens/n_data);
-	int record_time = 5;
+	int record_time = 10;
 	int n_data = int(n_gens/record_time);
 
 	double pop_shift = 0.0;
@@ -144,9 +189,10 @@ int main (int argc, char * argv[]){
 	double w_v;
 	vector <double> pop_hist;
 	vector <double> het_hist;
+	vector <double> varhet_hist;
 
 	//data files
-	ofstream flog, fpop, fhet, fprof;
+	ofstream flog, fpop, fhet, fprof, fvarhet;
 	time_t time_start;
 	clock_t c_init = clock();
 	struct tm * timeinfo;
@@ -171,13 +217,16 @@ int main (int argc, char * argv[]){
 
 	string logName = "log_" + param_string + date_time.str() + ".txt";
 	string hetName = "het_" + param_string +  date_time.str() + ".txt";
+	string varhetName = "varhet_" + param_string +  date_time.str() + ".txt";
 	string popName = "pop_"+ param_string +  date_time.str() + ".txt";
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
+
 
     flog.open(logName);
     fhet.open(hetName);
     fpop.open(popName);
     fprof.open(profName);
+    fvarhet.open(varhetName);
 
 
 
@@ -186,20 +235,24 @@ int main (int argc, char * argv[]){
 
 
 
-	/*for(int i = 0; i < int(n_demes*.5); i++){
-		for(int j = 0; j < int(n_demes); j++){
+	for(int i = int(n_demes*.5)-10; i < int(n_demes*.5)+10; i++){
+		for(int j = int(n_demes*.5)-10; j < int(n_demes*.5)+10; j++){
+			if (sqrt(abs(i-int(n_demes*.5))*abs(i-int(n_demes*.5)) + abs(j-int(n_demes*.5))*abs(j-int(n_demes*.5))) < 10)
+			{
 
-		deme[i][j][0] = .5*K;
-		deme[i][j][1] = .5*K;
+				deme[i][j][0] = .5*K;
+				deme[i][j][1] = .5*K;
 
+
+			}
 
 		}
 
 
-	}*/
+	}
 	//initial population in middle
-	deme[int(n_demes/2)][int(n_demes/2)][0] = .5*K;
-	deme[int(n_demes/2)][int(n_demes/2)][1] = .5*K;
+	//deme[int(n_demes/2)][int(n_demes/2)][0] = K;
+	//deme[int(n_demes/2)][int(n_demes/2)][1] = K;
 
 
 
@@ -219,9 +272,10 @@ int main (int argc, char * argv[]){
 			
 
 			}
-
-
 		}
+
+
+
 
 
 		for(int i = 0; i < n_demes ; i++){
@@ -234,20 +288,7 @@ int main (int argc, char * argv[]){
 				for(int ne=0; ne <4; ne++){
 					neighbs[ne][0] = (arr[0] + n_demes+neighb_vec[ne][0]) % n_demes;
 					neighbs[ne][1] = (arr[1] + n_demes+neighb_vec[ne][1]) % n_demes;
-					pop_sum+=deme_aux[neighbs[ne][0]][neighbs[ne][1]][0] +deme_aux[neighbs[ne][0]][neighbs[ne][1]][1];
-					pop_sum+=deme[neighbs[ne][0]][neighbs[ne][1]][0] +deme[neighbs[ne][0]][neighbs[ne][1]][1];
-
-					/*int n_neighbs[4][2];
-					int ne_arr[2] = {neighbs[ne][0], neighbs[ne][1]};
-
-					
-					for(int ne_=0; ne_ <4; ne_++){
-						n_neighbs[ne_][0] = (ne_arr[0] + n_demes+neighb_vec[ne_][0]) % n_demes;
-						n_neighbs[ne_][1] = (ne_arr[1] + n_demes+neighb_vec[ne_][1]) % n_demes;
-						pop_sum+=deme_aux[n_neighbs[ne_][0]][n_neighbs[ne_][1]][0] + deme_aux[n_neighbs[ne_][0]][n_neighbs[ne_][1]][1];
-						pop_sum+=deme[n_neighbs[ne_][0]][n_neighbs[ne_][1]][0] + deme[n_neighbs[ne_][0]][n_neighbs[ne_][1]][1];
-
-					}*/
+					pop_sum += deme[i][j][neighbs[ne][0]] + deme[i][j][neighbs[ne][1]]+deme_aux[i][j][neighbs[ne][0]]+deme_aux[i][j][neighbs[ne][1]];
 
 
 
@@ -300,7 +341,7 @@ int main (int argc, char * argv[]){
 
 
 
-		/*if (sumDeme(deme,n_demes)/(K*n_demes) > .5*n_demes*n_demes){
+		if (sumDeme(deme,n_demes)/(K*n_demes) > .5*n_demes*n_demes){
 			int shift =  int(sumDeme(deme,n_demes)/K - .5*n_demes)+1;
 			if ((shift< 0) == true){
 
@@ -341,13 +382,13 @@ int main (int argc, char * argv[]){
 
 
 
-		}*/
+		}
 
 
 		//cout << dt << endl;
 		//cout << record_time << endl;
 		if (dt % record_time == 0){
-
+			varhet_hist.push_back(calcVarHet(deme, n_demes)); 
 			het_hist.push_back(calcHet(deme, n_demes)); // Store heterozygosity
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demes));
 
@@ -377,8 +418,9 @@ int main (int argc, char * argv[]){
 
    for(int i=0;i < n_data;i++){
 
-    	fhet << i*record_time << ", "  << het_hist[i] << endl;
-    	fpop << i*record_time << ", "  << pop_hist[i] << endl;
+    	fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
+    	fhet << int(i*record_time) << ", "  << het_hist[i] << endl;
+    	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
 
     }
 
@@ -403,18 +445,13 @@ int main (int argc, char * argv[]){
     fpop.close();
     flog.close();
     fprof.close();
+    fvarhet.close();
 
     cout << "Finished!" << "\n";
-    cout << "Final Heterozygosity: " <<het_hist[n_data-1] << "\n";
+    //cout << "Final Heterozygosity: " <<het_hist[n_data-1] << "\n";
     cout << "Finished in " << run_time << " seconds \n";
 
 	puts (buffer);
-
-
-
-
-
-
 
 
 
