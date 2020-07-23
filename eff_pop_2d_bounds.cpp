@@ -13,9 +13,10 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 10000;
+unsigned long K  = 50000;
 unsigned int n_gens = 1000000;
-const int n_demes = 40; 
+unsigned int n_gens = 1000000;
+const int n_demes = 80; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B = 8;
