@@ -15,7 +15,7 @@
 
 unsigned long K  = 50000;
 unsigned int n_gens = 1000000;
-float h_thresh = .1;
+float h_thresh = .4;
 const int n_demesh = 120; 
 const int n_demesw = 80; 
 const unsigned int n_spec = 2;
@@ -23,7 +23,8 @@ float M = 0.25;
 float B = 0;
 float g0 = 0.01;
 unsigned long prof_hist = 0;
-unsigned long fast_samp_flag = 1;
+unsigned long freeze_flag = 1;
+unsigned long fast_samp_flag = 0;
 
 
 
@@ -44,8 +45,16 @@ double sumDeme(long double arr[n_demesh][n_demesw][n_spec], int arrSize){
 
 
 
-
 }
+
+/*double sectorCount(long arr[n_demesh][n_demesw][n_spec]){
+	double count=0.0;
+
+
+
+	return countl
+
+}*/
 
 
 
@@ -145,7 +154,7 @@ int main (int argc, char * argv[]){
 	using namespace std;
 
 	int c;
-    while ((c = getopt (argc, argv, "K:Z:B:T:M:G:F")) != -1)
+    while ((c = getopt (argc, argv, "K:Z:B:T:M:G:R:F")) != -1)
     {
         if (c == 'K')
             K  = atoi(optarg); // carrying capacity
@@ -159,6 +168,8 @@ int main (int argc, char * argv[]){
             M = atof(optarg); // migration probability
         else if (c == 'G')
             g0 = atof(optarg); // growth rate
+        else if (c == 'R')
+            freeze_flag = atoi(optarg); // growth rate
         else if (c == 'F')
             fast_samp_flag = atoi(optarg); // growth rate
 
@@ -185,7 +196,7 @@ int main (int argc, char * argv[]){
 	unsigned int new_cnt[n_spec + 1];
 	//int n_data = 1000;
 	//int record_time = int(n_gens/n_data);
-	int record_time = 10;
+	int record_time = 100;
 	//int n_data = int(n_gens/record_time);
 	int dt = 0;
 
@@ -196,10 +207,10 @@ int main (int argc, char * argv[]){
 
 	vector <double> pop_hist;
 	vector <double> het_hist;
-	vector <double> varhet_hist;
+	//vector <double> varhet_hist;
 
 	//data files
-	ofstream flog, fpop, fhet, fprof,fvarhet;
+	ofstream flog, fpop, fhet, fprof;
 	time_t time_start;
 	clock_t c_init = clock();
 	struct tm * timeinfo;
@@ -226,15 +237,15 @@ int main (int argc, char * argv[]){
 
 	string logName = "log_" + param_string + date_time.str() + ".txt";
 	string hetName = "het_" + param_string +  date_time.str() + ".txt";
-	string varhetName = "varhet_" + param_string +  date_time.str() + ".txt";
+	//string varhetName = "varhet_" + param_string +  date_time.str() + ".txt";
 	string popName = "pop_"+ param_string +  date_time.str() + ".txt";
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
 
-    flog.open("sim_data/"+logName);
-    fhet.open("sim_data/"+hetName);
-    fpop.open("sim_data/"+popName);
-    fprof.open("sim_data/"+profName);
-    fvarhet.open("sim_data/"+varhetName);
+    flog.open(logName);
+    fhet.open(hetName);
+    fpop.open(popName);
+    fprof.open(profName);
+    //fvarhet.open("sim_data/"+varhetName);
 
 
 
@@ -281,15 +292,41 @@ int main (int argc, char * argv[]){
 	//for (int dt = 0 ; dt < n_gens; dt++ ){
 	while(ht>h_thresh){
 
-		
+		int d_start = 0;
+		int d_end = n_demesh;
 		for(int ii = 0; ii < int(n_demesh); ii++){
+			int full = 0;
+			int empty = 0;
+			int empty_found = 0;
 			for(int jj = 0; jj < int(n_demesw); jj++){
 
 
 				deme_aux[ii][jj][0] = deme[ii][jj][0];
 				deme_aux[ii][jj][1] = deme[ii][jj][1];
 
-			
+				/*if(deme[ii][jj][0] + deme[ii][jj][1] == K){
+
+					full+=1;
+				}	
+
+				if(deme[ii][jj][0] + deme[ii][jj][1] == 0){
+
+					empty+=1;
+				}	
+
+			}
+
+			if ((full ==n_demesw)&&(freeze_flag == 1)){
+
+				d_start = ii;
+
+			}
+
+			if ((empty ==n_demesw)&&(empty_found ==0)&&(fast_samp_flag == 1)){
+
+				d_end = ii+5;
+				empty_found =1;*/
+
 
 			}
 
@@ -405,12 +442,12 @@ int main (int argc, char * argv[]){
 			}
 		}
 
-		int i=n_demesh-1;
+		int i=n_demesh;
 		for( int j=0; j<n_demesw; j++){
 			int arr[2] = {i, j};
 			int neighb_vec[3][2] = {{0,1},{-1,0},{0,-1}};
 			int neighbs[3][2];
-			int pop_sum = fast_samp_flag;
+			//int pop_sum = fast_samp_flag;
 			//cout << i << ", " << j << endl;
 
 			for(int ne=0; ne <3; ne++){
@@ -505,12 +542,12 @@ int main (int argc, char * argv[]){
 		//cout << record_time << endl;
 		
 		if (dt % record_time == 0){
-			varhet_hist.push_back(calcVarHet(deme, n_demesh)); 
+			//varhet_hist.push_back(calcVarHet(deme, n_demesh)); 
 			het_hist.push_back(calcHet(deme, n_demesh)); // Store heterozygosity
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demesh));
 	        ht= calcHet(deme, n_demesh);
 
-	        if ((het_hist[het_hist.size()-2]> prof_count*.1) && (het_hist[het_hist.size()-1]< prof_count*.1)  ){
+	        /*if ((het_hist[het_hist.size()-2]> prof_count*.1) && (het_hist[het_hist.size()-1]< prof_count*.1)  ){
 	        	ostringstream strh;
 	        	strh << prof_count*.1 ;
 	        	
@@ -526,7 +563,7 @@ int main (int argc, char * argv[]){
             	}
             	prof_count-=1;
 
-	        }
+	        }*/
 
 	        if (prof_hist !=0){
 	        	ostringstream strT;
@@ -553,7 +590,7 @@ int main (int argc, char * argv[]){
     }
    int n_data = int(dt/record_time);
    for(int i=0;i < n_data;i++){
-   		fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
+   		//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	fhet << int(i*record_time) << ", "  << het_hist[i] << endl;
     	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
 
@@ -580,7 +617,7 @@ int main (int argc, char * argv[]){
     fpop.close();
     flog.close();
     fprof.close();
-    fvarhet.close();
+    //fvarhet.close();
 
     cout << "Finished!" << "\n";
     cout << "Final Heterozygosity: " <<het_hist[n_data-1] << "\n";
