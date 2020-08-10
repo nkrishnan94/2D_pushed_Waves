@@ -14,10 +14,10 @@
 
 
 unsigned long K  = 10000;
-unsigned int n_gens = 100000;
+unsigned int n_gens = 5000;
 //float h_thresh = .1;
-const int n_demesh = 100; 
-const int n_demesw =200; 
+const int n_demesh = 120; 
+const int n_demesw =900; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B =0;
@@ -294,27 +294,27 @@ int main (int argc, char * argv[]){
 	vector <double> het_hist;
 	vector <double> sects_hist;
 	vector <double> rough_hist_10;
-	vector <double> rough_hist_20;
-	vector <double> rough_hist_30;
-	vector <double> rough_hist_40;
 	vector <double> rough_hist_50;
-	vector <double> rough_hist_60;
-	vector <double> rough_hist_70;
-	vector <double> rough_hist_80;
-	vector <double> rough_hist_90;
 	vector <double> rough_hist_100;
-	vector <double> rough_hist_110;
-	vector <double> rough_hist_120;
-	vector <double> rough_hist_130;
-	vector <double> rough_hist_140;
 	vector <double> rough_hist_150;
-	vector <double> rough_hist_160;
-	vector <double> rough_hist_170;
-	vector <double> rough_hist_180;
+	vector <double> rough_hist_200;
+	vector <double> rough_hist_250;
+	vector <double> rough_hist_300;
+	vector <double> rough_hist_350;
+	vector <double> rough_hist_400;
+	vector <double> rough_hist_450;
+	vector <double> rough_hist_500;
+	vector <double> rough_hist_550;
+	vector <double> rough_hist_600;
+	vector <double> rough_hist_650;
+	vector <double> rough_hist_700;
+	vector <double> rough_hist_750;
+	vector <double> rough_hist_800;
+	vector <double> rough_hist_850;
 	//vector <double> varhet_hist;
 
 	//data files
-	ofstream flog, fpop, fhet, fprof,fsects,frough_10,frough_20,frough_30,frough_40,frough_50,frough_60,frough_70,frough_80,frough_90,frough_100,frough_110,frough_120,frough_130,frough_140,frough_150,frough_160,frough_170,frough_180;
+	ofstream flog, fpop, fhet, fprof,fsects,frough_10,frough_50,frough_100,frough_150,frough_200,frough_250,frough_300,frough_350,frough_400,frough_450,frough_500,frough_550,frough_600,frough_650,frough_700,frough_750,frough_800,frough_850;
 	time_t time_start;
 	clock_t c_init = clock();
 	struct tm * timeinfo;
@@ -346,25 +346,25 @@ int main (int argc, char * argv[]){
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
 	string sectsName = "sects_" + param_string + date_time.str() + ".txt";
 	string rough10Name = "rough_10_" + param_string + date_time.str() + ".txt";
-	string rough20Name = "rough_20_" + param_string + date_time.str() + ".txt";
-	string rough30Name = "rough_30_" + param_string + date_time.str() + ".txt";
-	string rough40Name = "rough_40_" + param_string + date_time.str() + ".txt";
 	string rough50Name = "rough_50_" + param_string + date_time.str() + ".txt";
-	string rough60Name = "rough_60_" + param_string + date_time.str() + ".txt";
-	string rough70Name = "rough_70_" + param_string + date_time.str() + ".txt";
-	string rough80Name = "rough_80_" + param_string + date_time.str() + ".txt";
-	string rough90Name = "rough_90_" + param_string + date_time.str() + ".txt";
 	string rough100Name = "rough_100_" + param_string + date_time.str() + ".txt";
-	string rough110Name = "rough_110_" + param_string + date_time.str() + ".txt";
-	string rough120Name = "rough_120_" + param_string + date_time.str() + ".txt";
-	string rough130Name = "rough_130_" + param_string + date_time.str() + ".txt";
-	string rough140Name = "rough_140_" + param_string + date_time.str() + ".txt";
 	string rough150Name = "rough_150_" + param_string + date_time.str() + ".txt";
-	string rough160Name = "rough_160_" + param_string + date_time.str() + ".txt";
-	string rough170Name = "rough_170_" + param_string + date_time.str() + ".txt";
-	string rough180Name = "rough_180_" + param_string + date_time.str() + ".txt";
-	//string folder = "sim_data_KPZ/";
-	string folder = "";
+	string rough200Name = "rough_200_" + param_string + date_time.str() + ".txt";
+	string rough250Name = "rough_250_" + param_string + date_time.str() + ".txt";
+	string rough300Name = "rough_300_" + param_string + date_time.str() + ".txt";
+	string rough350Name = "rough_350_" + param_string + date_time.str() + ".txt";
+	string rough400Name = "rough_400_" + param_string + date_time.str() + ".txt";
+	string rough450Name = "rough_450_" + param_string + date_time.str() + ".txt";
+	string rough500Name = "rough_500_" + param_string + date_time.str() + ".txt";
+	string rough550Name = "rough_550_" + param_string + date_time.str() + ".txt";
+	string rough600Name = "rough_600_" + param_string + date_time.str() + ".txt";
+	string rough650Name = "rough_650_" + param_string + date_time.str() + ".txt";
+	string rough700Name = "rough_700_" + param_string + date_time.str() + ".txt";
+	string rough750Name = "rough_750_" + param_string + date_time.str() + ".txt";
+	string rough800Name = "rough_800_" + param_string + date_time.str() + ".txt";
+	string rough850Name = "rough_850_" + param_string + date_time.str() + ".txt";
+	string folder = "KPZ/sim_data_KPZ/";
+	//string folder = "";
 
     flog.open(folder+logName);
     fhet.open(folder+hetName);
@@ -372,37 +372,69 @@ int main (int argc, char * argv[]){
     fprof.open(folder+profName);
     //fsects.open(folder+sectsName);
     frough_10.open(folder+rough10Name);
-    frough_20.open(folder+rough20Name);
-    frough_30.open(folder+rough30Name);
-    frough_40.open(folder+rough40Name);
     frough_50.open(folder+rough50Name);
-    frough_60.open(folder+rough60Name);
-    frough_70.open(folder+rough70Name);
-    frough_80.open(folder+rough80Name);
-    frough_90.open(folder+rough90Name);
     frough_100.open(folder+rough100Name);
-    frough_110.open(folder+rough110Name);
-    frough_120.open(folder+rough120Name);
-    frough_130.open(folder+rough130Name);
-    frough_140.open(folder+rough140Name);
     frough_150.open(folder+rough150Name);
-    frough_160.open(folder+rough160Name);
-    frough_170.open(folder+rough170Name);
-    frough_180.open(folder+rough180Name);
+    frough_200.open(folder+rough200Name);
+    frough_250.open(folder+rough250Name);
+    frough_300.open(folder+rough300Name);
+    frough_350.open(folder+rough350Name);
+    frough_400.open(folder+rough400Name);
+    frough_450.open(folder+rough450Name);
+    frough_500.open(folder+rough500Name);
+    frough_550.open(folder+rough550Name);
+    frough_600.open(folder+rough600Name);
+    frough_650.open(folder+rough650Name);
+    frough_700.open(folder+rough700Name);
+    frough_750.open(folder+rough750Name);
+    frough_800.open(folder+rough800Name);
+    frough_850.open(folder+rough850Name);
     //fvarhet.open("sim_data/"+varhetName);
 
 
 
 
 
+    cout<< "hi";
+    string line;
+	ifstream myfile ("KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt");
+	//cout<< "KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt";
+	
+
+	int j = 0;
+	if (myfile.is_open())
+  	{
 
 
+		while ( getline (myfile,line) )
+	    {
+	      string::iterator it;
+	      int index = 0;
+	      //for ( it = line.begin() ; it < line.end(); it++ ,index++)
+	      //{
+	       // cout << *it;
+	        //cout << line << '\n';
+	      //}
+	      deme[0][j][0] = stof(line);
+	      //cout << stoi(line);
+	      deme[0][j][1] = 0;
+	      j+=1;
+	      //cout << line[1,2,3];
 
-	for(int i = 0; i < int(n_demesh*.5); i++){
+	   
+	    }
+	    myfile.close();
+
+
+	}
+	
+
+
+	for(int i = 1; i < int(n_demesh); i++){
 		for(int j = 0; j < n_demesw; j++){
 
-			deme[i][j][0] = .5*K;
-			deme[i][j][1] = .5*K;
+			deme[i][j][0] = deme[0][j][0];
+			//deme[i][j][1] = .5*K;
 
 
 		}
@@ -686,23 +718,23 @@ int main (int argc, char * argv[]){
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demesh));
 	        //sects_hist.push_back(countSectors(deme));
 	        rough_hist_10.push_back(getFrontDeme(deme,10));
-	        rough_hist_20.push_back(getFrontDeme(deme,20));
-	        rough_hist_30.push_back(getFrontDeme(deme,30));
-	        rough_hist_40.push_back(getFrontDeme(deme,40));
 	        rough_hist_50.push_back(getFrontDeme(deme,50));
-	        rough_hist_60.push_back(getFrontDeme(deme,60));
-	        rough_hist_70.push_back(getFrontDeme(deme,70));
-	        rough_hist_80.push_back(getFrontDeme(deme,80));
-	        rough_hist_90.push_back(getFrontDeme(deme,90));
 	        rough_hist_100.push_back(getFrontDeme(deme,100));
-	        rough_hist_110.push_back(getFrontDeme(deme,110));
-	        rough_hist_120.push_back(getFrontDeme(deme,120));
-	        rough_hist_130.push_back(getFrontDeme(deme,130));
-	        rough_hist_140.push_back(getFrontDeme(deme,140));
 	        rough_hist_150.push_back(getFrontDeme(deme,150));
-	        rough_hist_160.push_back(getFrontDeme(deme,160));
-	        rough_hist_170.push_back(getFrontDeme(deme,170));
-	        rough_hist_180.push_back(getFrontDeme(deme,180));
+	        rough_hist_200.push_back(getFrontDeme(deme,200));
+	        rough_hist_250.push_back(getFrontDeme(deme,250));
+	        rough_hist_300.push_back(getFrontDeme(deme,300));
+	        rough_hist_350.push_back(getFrontDeme(deme,350));
+	        rough_hist_400.push_back(getFrontDeme(deme,400));
+	        rough_hist_450.push_back(getFrontDeme(deme,450));
+	        rough_hist_500.push_back(getFrontDeme(deme,500));
+	        rough_hist_550.push_back(getFrontDeme(deme,550));
+	        rough_hist_600.push_back(getFrontDeme(deme,600));
+	        rough_hist_650.push_back(getFrontDeme(deme,650));
+	        rough_hist_700.push_back(getFrontDeme(deme,700));
+	        rough_hist_750.push_back(getFrontDeme(deme,750));
+	        rough_hist_800.push_back(getFrontDeme(deme,800));
+	        rough_hist_850.push_back(getFrontDeme(deme,850));
 
 	        //ht= calcHet(deme, n_demesh);
 
@@ -754,23 +786,23 @@ int main (int argc, char * argv[]){
     	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
     	//fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
     	frough_10<< int(i*record_time) << ", "  << rough_hist_10[i] << endl;
-    	frough_20<< int(i*record_time) << ", "  << rough_hist_20[i] << endl;
-    	frough_30<< int(i*record_time) << ", "  << rough_hist_30[i] << endl;
-    	frough_40<< int(i*record_time) << ", "  << rough_hist_40[i] << endl;
     	frough_50<< int(i*record_time) << ", "  << rough_hist_50[i] << endl;
-    	frough_60<< int(i*record_time) << ", "  << rough_hist_60[i] << endl;
-    	frough_70<< int(i*record_time) << ", "  << rough_hist_70[i] << endl;
-    	frough_80<< int(i*record_time) << ", "  << rough_hist_80[i] << endl;
-    	frough_90<< int(i*record_time) << ", "  << rough_hist_90[i] << endl;
     	frough_100<< int(i*record_time) << ", "  << rough_hist_100[i] << endl;
-    	frough_110<< int(i*record_time) << ", "  << rough_hist_110[i] << endl;
-    	frough_120<< int(i*record_time) << ", "  << rough_hist_120[i] << endl;
-    	frough_130<< int(i*record_time) << ", "  << rough_hist_130[i] << endl;
-    	frough_140<< int(i*record_time) << ", "  << rough_hist_140[i] << endl;
     	frough_150<< int(i*record_time) << ", "  << rough_hist_150[i] << endl;
-    	frough_160<< int(i*record_time) << ", "  << rough_hist_160[i] << endl;
-    	frough_170<< int(i*record_time) << ", "  << rough_hist_170[i] << endl;
-    	frough_180<< int(i*record_time) << ", "  << rough_hist_180[i] << endl;
+    	frough_200<< int(i*record_time) << ", "  << rough_hist_200[i] << endl;
+    	frough_250<< int(i*record_time) << ", "  << rough_hist_250[i] << endl;
+    	frough_300<< int(i*record_time) << ", "  << rough_hist_300[i] << endl;
+    	frough_350<< int(i*record_time) << ", "  << rough_hist_350[i] << endl;
+    	frough_400<< int(i*record_time) << ", "  << rough_hist_400[i] << endl;
+    	frough_450<< int(i*record_time) << ", "  << rough_hist_450[i] << endl;
+    	frough_500<< int(i*record_time) << ", "  << rough_hist_500[i] << endl;
+    	frough_550<< int(i*record_time) << ", "  << rough_hist_550[i] << endl;
+    	frough_600<< int(i*record_time) << ", "  << rough_hist_600[i] << endl;
+    	frough_650<< int(i*record_time) << ", "  << rough_hist_650[i] << endl;
+    	frough_700<< int(i*record_time) << ", "  << rough_hist_700[i] << endl;
+    	frough_750<< int(i*record_time) << ", "  << rough_hist_750[i] << endl;
+    	frough_800<< int(i*record_time) << ", "  << rough_hist_800[i] << endl;
+    	frough_850<< int(i*record_time) << ", "  << rough_hist_850[i] << endl;
 
     }
 
@@ -796,23 +828,23 @@ int main (int argc, char * argv[]){
     flog.close();
     fprof.close();
     frough_10.close();
-    frough_20.close();
-    frough_30.close();
-    frough_40.close();
     frough_50.close();
-    frough_60.close();
-    frough_70.close();
-    frough_80.close();
-    frough_90.close();
     frough_100.close();
-    frough_110.close();
-    frough_120.close();
-    frough_130.close();
-    frough_140.close();
     frough_150.close();
-    frough_160.close();
-    frough_170.close();
-    frough_180.close();
+    frough_200.close();
+    frough_250.close();
+    frough_300.close();
+    frough_350.close();
+    frough_400.close();
+    frough_450.close();
+    frough_500.close();
+    frough_550.close();
+    frough_600.close();
+    frough_650.close();
+    frough_700.close();
+    frough_750.close();
+    frough_800.close();
+    frough_850.close();
     //fvarhet.close();
 
     cout << "Finished!" << "\n";
