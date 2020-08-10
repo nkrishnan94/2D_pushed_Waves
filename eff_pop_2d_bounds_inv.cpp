@@ -14,15 +14,15 @@
 
 
 unsigned long K  = 10000;
-unsigned int n_gens = 100000;
+unsigned int n_gens = 10000;
 //float h_thresh = .1;
-const int n_demesh = 120; 
+const int n_demesh = 100; 
 const int n_demesw =20; 
 const unsigned int n_spec = 2;
 float M = 0.25;
-float B =10;
+float B = 0;
 float g0 = 0.01;
-float start_frac = 1;
+float start_frac = .1;
 unsigned long prof_hist = 0;
 unsigned long fast_samp_flag = 1;
 unsigned long freeze_flag = 0;
@@ -182,7 +182,18 @@ int countSectors(long double arr[n_demesh][n_demesw][n_spec]){
 	
 }
 
+int mutSum(long double arr[n_demesh][n_demesw][n_spec]){
+	int sum=0;
+	for(int i = 0; i < n_demesh; i++){
+		for(int j=0; j<n_demesw;j++){
+			sum+=arr[i][j][1];
+		}
+	}
 
+
+
+	return sum;
+}
 
 
 float calcVarHet(long double arr[n_demesh][n_demesw][n_spec], const int arrSize){
@@ -360,10 +371,20 @@ int main (int argc, char * argv[]){
 
 
 
-	for(int i = 0; i < 5; i++){
+	for(int i = 0; i < 30; i++){
 		for(int j = 0; j < n_demesw; j++){
 
-			deme[i][j][0] = start_frac*K;
+			deme[i][j][0] = K;
+			//deme[i][j][1] = .5*K;
+
+
+		}
+
+	}
+	for(int i = 34; i < 35; i++){
+		for(int j = 0; j < n_demesw; j++){
+
+			deme[i][j][1] = start_frac*K;
 			//deme[i][j][1] = .5*K;
 
 
@@ -371,16 +392,8 @@ int main (int argc, char * argv[]){
 
 	}
 
-	for(int i = 5; i < 10; i++){
-		for(int j = 0; j < n_demesw; j++){
-
-			//deme[i][j][0] = .5*K;
-			deme[i][j][1] = .1*K;
 
 
-		}
-
-	}
 	//initial population in middle
 	//deme[int(n_demes/2)][int(n_demes/2)][0] = K;
 	//deme[int(n_demes/2)][int(n_demes/2)][1] = K;
@@ -406,7 +419,7 @@ int main (int argc, char * argv[]){
 
 	int dt = 0;
 	//for (int dt = 0 ; dt < n_gens; dt++ ){ 
-	while(ht>0){
+	while(mutSum(deme)>0){
 
 		int d_start = 0;
 		int d_end= n_demesh ;
@@ -702,6 +715,8 @@ int main (int argc, char * argv[]){
 		}
 	
 		dt+=1;
+
+
 
 
     }
