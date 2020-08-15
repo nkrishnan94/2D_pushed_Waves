@@ -13,14 +13,14 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 50000;
-unsigned int n_gens = 100000;
+unsigned long K  = 10000;
+unsigned int n_gens = 5000;
 //float h_thresh = .1;
 const int n_demesh = 120; 
-const int n_demesw =1100; 
+const int n_demesw =40; 
 const unsigned int n_spec = 2;
 float M = 0.25;
-float B =0;
+float B =10;
 float g0 = 0.01;
 unsigned long prof_hist = 0;
 unsigned long fast_samp_flag = 1;
@@ -113,7 +113,6 @@ int calcLastRow(long double arr[n_demesh][n_demesw][n_spec]){
 
 }
 
-
 int getFrontDeme(long double arr[n_demesh][n_demesw][n_spec], int L){
 
 	long double N = n_demesw;
@@ -121,13 +120,13 @@ int getFrontDeme(long double arr[n_demesh][n_demesw][n_spec], int L){
 	long double frontDiffs=0;
 	long double fronts[n_demesw];
 
-	for(int j =int(n_demesw/2) -int(L/2) ; j< int(n_demesw/2)+int(L/2); j++){
+	for(int j=0 ;j< n_demesw; j++){
 
 		int frontFound=0;
 		for(int i = 1; i < n_demesh; i++){
-			if( (arr[i][j][0]+arr[i][j][1]==0) && (arr[i-1][j][0]+arr[i-1][j][1]>0) &&(frontFound==0)){
-				fronts[j]=(i-1);
-				frontSum+=(i-1);
+			if( (arr[i][j][0]+arr[i][j][0]==0) && (arr[i-1][j][0]+arr[i-1][j][0]>0) &&(frontFound==0)){
+				fronts[j]=i-1;
+				frontSum+=i-1;
 				frontFound=1;
 
 			}
@@ -136,49 +135,10 @@ int getFrontDeme(long double arr[n_demesh][n_demesw][n_spec], int L){
 		}
 	}
 
-	for(int j =int(n_demesw/2) -int(L/2) ; j< int(n_demesw/2)+int(L/2); j++){
-		frontDiffs+=  pow((fronts[j] - (frontSum/L)  ),2);
+	for(int j =int(n_demesw/2 -L/2) ; j< int(n_demesw/2+L/2); j++){
+		frontDiffs+=  pow(((frontSum/N) - fronts[j]),2);
 
 	}
-
-
-	//long double front_rough = frontDiffs/N;
-	
-	return frontDiffs/L;
-
-}
-
-int getEdgeDeme(long double arr[n_demesh][n_demesw][n_spec], int L){
-
-	long double N = n_demesw;
-	 
-	long double frontDiffs=0;
-	long double fronts[L];
-
-	for(int j =0 ; j< L; j++){
-
-		int frontFound=0;
-		for(int i = 1; i < n_demesh; i++){
-			if( (arr[i][int(n_demesw/2)- int(L/2)+j][0]+arr[i][int(n_demesw/2)- int(L/2)+j][1]>0) &&(frontFound==0)){
-				fronts[j]=i;
-
-
-			}
-
-
-		}
-	}
-	long double frontSum = 0; 
-	for(int j =0 ; j< L; j++){
-		frontSum+= fronts[j];
-
-	}
-
-	for(int j =0 ; j< L; j++){
-		frontDiffs+=  pow((fronts[j] - (frontSum/L)  ),2);
-
-	}
-
 
 
 	//long double front_rough = frontDiffs/N;
@@ -283,7 +243,7 @@ int main (int argc, char * argv[]){
 	using namespace std;
 
 	int c;
-    while ((c = getopt (argc, argv, "K:Z:B:T:M:G:F")) != -1)
+    while ((c = getopt (argc, argv, "K:Z:B:W:M:G:F")) != -1)
     {
         if (c == 'K')
             K  = atoi(optarg); // carrying capacity
@@ -293,6 +253,7 @@ int main (int argc, char * argv[]){
             B = atof(optarg); // cooperativity
         //else if (c == 'T')
         //    h_thresh = atof(optarg); // cooperativity
+
         else if (c == 'M')
             M = atof(optarg); // migration probability
         else if (c == 'G')
@@ -319,7 +280,7 @@ int main (int argc, char * argv[]){
 
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
-	int n_data = 1000;
+	int n_data = 500;
 	int record_time = int(n_gens/n_data);
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
@@ -333,18 +294,28 @@ int main (int argc, char * argv[]){
 	vector <double> pop_hist;
 	vector <double> het_hist;
 	vector <double> sects_hist;
-	vector <double> rough_hist_16;
-	vector <double> rough_hist_32;
-	vector <double> rough_hist_64;
-	vector <double> rough_hist_128;
-	vector <double> rough_hist_256;
-	vector <double> rough_hist_512;
-	vector <double> rough_hist_1024;
-	
+	/*vector <double> rough_hist_10;
+	vector <double> rough_hist_20;
+	vector <double> rough_hist_30;
+	vector <double> rough_hist_40;
+	vector <double> rough_hist_50;
+	vector <double> rough_hist_60;
+	vector <double> rough_hist_70;
+	vector <double> rough_hist_80;
+	vector <double> rough_hist_90;
+	vector <double> rough_hist_100;
+	vector <double> rough_hist_110;
+	vector <double> rough_hist_120;
+	vector <double> rough_hist_130;
+	vector <double> rough_hist_140;
+	vector <double> rough_hist_150;
+	vector <double> rough_hist_160;
+	vector <double> rough_hist_170;
+	vector <double> rough_hist_180;*/
 	//vector <double> varhet_hist;
 
 	//data files
-	ofstream flog, fpop, fhet, fprof,fsects,frough_16,frough_32,frough_64,frough_128,frough_256,frough_512,frough_1024;
+	ofstream flog, fpop, fhet, fprof,fsects,frough_10,frough_20,frough_30,frough_40,frough_50,frough_60,frough_70,frough_80,frough_90,frough_100,frough_110,frough_120,frough_130,frough_140,frough_150,frough_160,frough_170,frough_180;
 	time_t time_start;
 	clock_t c_init = clock();
 	struct tm * timeinfo;
@@ -365,7 +336,7 @@ int main (int argc, char * argv[]){
 	Mstr << M;
 	Bstr << B;
 	Gstr << g0;
-	string param_string =  "K"+Kstr.str()+"_M" + Mstr.str() + "_B" +Bstr.str() + "_G" +Gstr.str() +"_";
+	string param_string =  "K"+Kstr.str()+"_M" + Mstr.str() + "_B" +Bstr.str() + "_G" +Gstr.str() +"_"+"Width20_";
 
 
 
@@ -375,76 +346,64 @@ int main (int argc, char * argv[]){
 	string popName = "pop_"+ param_string +  date_time.str() + ".txt";
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
 	string sectsName = "sects_" + param_string + date_time.str() + ".txt";
-	string rough10Name = "rough_16_" + param_string + date_time.str() + ".txt";
-	string rough30Name = "rough_32_" + param_string + date_time.str() + ".txt";
-	string rough50Name = "rough_64_" + param_string + date_time.str() + ".txt";
-	string rough70Name = "rough_128_" + param_string + date_time.str() + ".txt";
-	string rough90Name = "rough_256_" + param_string + date_time.str() + ".txt";
-	string rough110Name = "rough_512_" + param_string + date_time.str() + ".txt";
-	string rough130Name = "rough_1024_" + param_string + date_time.str() + ".txt";
-
-	//string folder = "KPZ/sim_data_KPZ/";
-	string folder = "";
+	/*string rough10Name = "rough_10_" + param_string + date_time.str() + ".txt";
+	string rough20Name = "rough_20_" + param_string + date_time.str() + ".txt";
+	string rough30Name = "rough_30_" + param_string + date_time.str() + ".txt";
+	string rough40Name = "rough_40_" + param_string + date_time.str() + ".txt";
+	string rough50Name = "rough_50_" + param_string + date_time.str() + ".txt";
+	string rough60Name = "rough_60_" + param_string + date_time.str() + ".txt";
+	string rough70Name = "rough_70_" + param_string + date_time.str() + ".txt";
+	string rough80Name = "rough_80_" + param_string + date_time.str() + ".txt";
+	string rough90Name = "rough_90_" + param_string + date_time.str() + ".txt";
+	string rough100Name = "rough_100_" + param_string + date_time.str() + ".txt";
+	string rough110Name = "rough_110_" + param_string + date_time.str() + ".txt";
+	string rough120Name = "rough_120_" + param_string + date_time.str() + ".txt";
+	string rough130Name = "rough_130_" + param_string + date_time.str() + ".txt";
+	string rough140Name = "rough_140_" + param_string + date_time.str() + ".txt";
+	string rough150Name = "rough_150_" + param_string + date_time.str() + ".txt";
+	string rough160Name = "rough_160_" + param_string + date_time.str() + ".txt";
+	string rough170Name = "rough_170_" + param_string + date_time.str() + ".txt";
+	string rough180Name = "rough_180_" + param_string + date_time.str() + ".txt";*/
+	string folder = "trace/";
+	//string folder = "";
 
     flog.open(folder+logName);
     fhet.open(folder+hetName);
     fpop.open(folder+popName);
     fprof.open(folder+profName);
-    //fsects.open(folder+sectsName);
-    frough_16.open(folder+rough10Name);
-    frough_32.open(folder+rough30Name);
-    frough_64.open(folder+rough50Name);
-    frough_128.open(folder+rough70Name);
-    frough_256.open(folder+rough90Name);
-    frough_512.open(folder+rough110Name);
-    frough_1024.open(folder+rough130Name);
-
+    fsects.open(folder+sectsName);
+    /*frough_10.open(folder+rough10Name);
+    frough_20.open(folder+rough20Name);
+    frough_30.open(folder+rough30Name);
+    frough_40.open(folder+rough40Name);
+    frough_50.open(folder+rough50Name);
+    frough_60.open(folder+rough60Name);
+    frough_70.open(folder+rough70Name);
+    frough_80.open(folder+rough80Name);
+    frough_90.open(folder+rough90Name);
+    frough_100.open(folder+rough100Name);
+    frough_110.open(folder+rough110Name);
+    frough_120.open(folder+rough120Name);
+    frough_130.open(folder+rough130Name);
+    frough_140.open(folder+rough140Name);
+    frough_150.open(folder+rough150Name);
+    frough_160.open(folder+rough160Name);
+    frough_170.open(folder+rough170Name);
+    frough_180.open(folder+rough180Name);*/
     //fvarhet.open("sim_data/"+varhetName);
 
 
 
 
 
-    cout<< "hi";
-    string line;
-	ifstream myfile ("KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt");
-	//cout<< "KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt";
-	
-
-	int j = 0;
-	if (myfile.is_open())
-  	{
 
 
-		while ( getline (myfile,line) )
-	    {
-	      string::iterator it;
-	      int index = 0;
-	      //for ( it = line.begin() ; it < line.end(); it++ ,index++)
-	      //{
-	       // cout << *it;
-	        //cout << line << '\n';
-	      //}
-	      deme[j][0][0] = stof(line);
-	      //cout << stoi(line);
-	      deme[j][0][1] = 0;
-	      j+=1;
-	      //cout << line[1,2,3];
 
-	   
-	    }
-	    myfile.close();
-
-
-	}
-	
-
-
-	for(int i = 1; i < int(n_demesh); i++){
+	for(int i = 0; i < int(n_demesh*.5); i++){
 		for(int j = 0; j < n_demesw; j++){
 
-			deme[i][j][0] = deme[i][0][0];
-			//deme[i][j][1] = .5*K;
+			deme[i][j][0] = .5*K;
+			deme[i][j][1] = .5*K;
 
 
 		}
@@ -726,16 +685,25 @@ int main (int argc, char * argv[]){
 			//varhet_hist.push_back(calcVarHet(deme, n_demesh)); 
 			het_hist.push_back(calcHet(deme, n_demesh)); // Store heterozygosity
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demesh));
-	        //sects_hist.push_back(countSectors(deme));
-	        rough_hist_16.push_back(getEdgeDeme(deme,16));
-	        rough_hist_32.push_back(getEdgeDeme(deme,32));
-	        rough_hist_64.push_back(getEdgeDeme(deme,64));
-	        rough_hist_128.push_back(getEdgeDeme(deme,128));
-	        rough_hist_256.push_back(getEdgeDeme(deme,256));
-	        rough_hist_512.push_back(getEdgeDeme(deme,512));
-	        rough_hist_1024.push_back(getEdgeDeme(deme,1024));
-
-
+	        sects_hist.push_back(countSectors(deme));
+	        /*rough_hist_10.push_back(getFrontDeme(deme,10));
+	        rough_hist_20.push_back(getFrontDeme(deme,20));
+	        rough_hist_30.push_back(getFrontDeme(deme,30));
+	        rough_hist_40.push_back(getFrontDeme(deme,40));
+	        rough_hist_50.push_back(getFrontDeme(deme,50));
+	        rough_hist_60.push_back(getFrontDeme(deme,60));
+	        rough_hist_70.push_back(getFrontDeme(deme,70));
+	        rough_hist_80.push_back(getFrontDeme(deme,80));
+	        rough_hist_90.push_back(getFrontDeme(deme,90));
+	        rough_hist_100.push_back(getFrontDeme(deme,100));
+	        rough_hist_110.push_back(getFrontDeme(deme,110));
+	        rough_hist_120.push_back(getFrontDeme(deme,120));
+	        rough_hist_130.push_back(getFrontDeme(deme,130));
+	        rough_hist_140.push_back(getFrontDeme(deme,140));
+	        rough_hist_150.push_back(getFrontDeme(deme,150));
+	        rough_hist_160.push_back(getFrontDeme(deme,160));
+	        rough_hist_170.push_back(getFrontDeme(deme,170));
+	        rough_hist_180.push_back(getFrontDeme(deme,180));*/
 
 	        //ht= calcHet(deme, n_demesh);
 
@@ -785,16 +753,25 @@ int main (int argc, char * argv[]){
    		//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	fhet << int(i*record_time) << ", "  << het_hist[i] << endl;
     	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
-    	//fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
-    	frough_16<< int(i*record_time) << ", "  << rough_hist_16[i] << endl;
-    	frough_32<< int(i*record_time) << ", "  << rough_hist_32[i] << endl;
-    	frough_64<< int(i*record_time) << ", "  << rough_hist_64[i] << endl;
-    	frough_128<< int(i*record_time) << ", "  << rough_hist_128[i] << endl;
-    	frough_256<< int(i*record_time) << ", "  << rough_hist_256[i] << endl;
-    	frough_512<< int(i*record_time) << ", "  << rough_hist_512[i] << endl;
-    	frough_1024<< int(i*record_time) << ", "  << rough_hist_1024[i] << endl;
-
-
+    	fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
+    	/*frough_10<< int(i*record_time) << ", "  << rough_hist_10[i] << endl;
+    	frough_20<< int(i*record_time) << ", "  << rough_hist_20[i] << endl;
+    	frough_30<< int(i*record_time) << ", "  << rough_hist_30[i] << endl;
+    	frough_40<< int(i*record_time) << ", "  << rough_hist_40[i] << endl;
+    	frough_50<< int(i*record_time) << ", "  << rough_hist_50[i] << endl;
+    	frough_60<< int(i*record_time) << ", "  << rough_hist_60[i] << endl;
+    	frough_70<< int(i*record_time) << ", "  << rough_hist_70[i] << endl;
+    	frough_80<< int(i*record_time) << ", "  << rough_hist_80[i] << endl;
+    	frough_90<< int(i*record_time) << ", "  << rough_hist_90[i] << endl;
+    	frough_100<< int(i*record_time) << ", "  << rough_hist_100[i] << endl;
+    	frough_110<< int(i*record_time) << ", "  << rough_hist_110[i] << endl;
+    	frough_120<< int(i*record_time) << ", "  << rough_hist_120[i] << endl;
+    	frough_130<< int(i*record_time) << ", "  << rough_hist_130[i] << endl;
+    	frough_140<< int(i*record_time) << ", "  << rough_hist_140[i] << endl;
+    	frough_150<< int(i*record_time) << ", "  << rough_hist_150[i] << endl;
+    	frough_160<< int(i*record_time) << ", "  << rough_hist_160[i] << endl;
+    	frough_170<< int(i*record_time) << ", "  << rough_hist_170[i] << endl;
+    	frough_180<< int(i*record_time) << ", "  << rough_hist_180[i] << endl;*/
 
     }
 
@@ -819,17 +796,25 @@ int main (int argc, char * argv[]){
     fpop.close();
     flog.close();
     fprof.close();
-    frough_16.close();
-    frough_32.close();
-    frough_64.close();
-    frough_128.close();
-    frough_256.close();
-    frough_512.close();
-    frough_1024.close();
-
-
-
-    //fvarhet.close();
+    /*frough_10.close();
+    frough_20.close();
+    frough_30.close();
+    frough_40.close();
+    frough_50.close();
+    frough_60.close();
+    frough_70.close();
+    frough_80.close();
+    frough_90.close();
+    frough_100.close();
+    frough_110.close();
+    frough_120.close();
+    frough_130.close();
+    frough_140.close();
+    frough_150.close();
+    frough_160.close();
+    frough_170.close();
+    frough_180.close();
+    //fvarhet.close();*/
 
     cout << "Finished!" << "\n";
     cout << "Final Heterozygosity: " <<het_hist[n_data-1] << "\n";
