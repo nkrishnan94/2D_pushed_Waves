@@ -14,10 +14,10 @@
 
 
 unsigned long K  = 100000000;
-unsigned int n_gens = 300;
+unsigned int n_gens = 10000;
 //float h_thresh = .1;
 const int n_demesh = 150; 
-const int n_demesw =8250; 
+const int n_demesw =150; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B =0;
@@ -324,7 +324,7 @@ int main (int argc, char * argv[]){
 
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
-	int n_data = 300;
+	int n_data = 1000;
 	int record_time = int(n_gens/n_data);
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
@@ -338,27 +338,25 @@ int main (int argc, char * argv[]){
 	vector <double> pop_hist;
 	vector <double> het_hist;
 	vector <double> sects_hist;
+	vector <double> rough_histe_4;
+	vector <double> rough_histe_8;
+	vector <double> rough_histe_16;
+	vector <double> rough_histe_32;
 	vector <double> rough_histe_64;
 	vector <double> rough_histe_128;
-	vector <double> rough_histe_256;
-	vector <double> rough_histe_512;
-	vector <double> rough_histe_1024;
-	vector <double> rough_histe_2048;
-	vector <double> rough_histe_4096;
-	vector <double> rough_histe_8192;
+
+	vector <double> rough_histf_4;
+	vector <double> rough_histf_8;
+	vector <double> rough_histf_16;
+	vector <double> rough_histf_32;
 	vector <double> rough_histf_64;
 	vector <double> rough_histf_128;
-	vector <double> rough_histf_256;
-	vector <double> rough_histf_512;
-	vector <double> rough_histf_1024;
-	vector <double> rough_histf_2048;
-	vector <double> rough_histf_4096;
-	vector <double> rough_histf_8192;
+
 	
 	//vector <double> varhet_hist;
 
 	//data files
-	ofstream flog, fpop, fhet, fprof,fsects,frough_64,frough_128,frough_256,frough_512,frough_1024, frough_2048,frough_4096,frough_8192;
+	ofstream flog, fpop, fhet, fprof,fsects,frough_4,frough_8,frough_16,frough_32,frough_64,frough_128;
 	time_t time_start;
 	clock_t c_init = clock();
 	struct tm * timeinfo;
@@ -390,16 +388,15 @@ int main (int argc, char * argv[]){
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
 	string sectsName = "sects_" + param_string + date_time.str() + ".txt";
 
-	string rough50Name = "rough_64_" + param_string + date_time.str() + ".txt";
-	string rough70Name = "rough_128_" + param_string + date_time.str() + ".txt";
-	string rough90Name = "rough_256_" + param_string + date_time.str() + ".txt";
-	string rough110Name = "rough_512_" + param_string + date_time.str() + ".txt";
-	string rough130Name = "rough_1024_" + param_string + date_time.str() + ".txt";
-	string rough150Name = "rough_2048_" + param_string + date_time.str() + ".txt";
-	string rough170Name = "rough_4096_" + param_string + date_time.str() + ".txt";
-	string rough190Name = "rough_8192_" + param_string + date_time.str() + ".txt";
+	string rough4Name = "rough_4_" + param_string + date_time.str() + ".txt";
+	string rough8Name = "rough_8_" + param_string + date_time.str() + ".txt";
+	string rough16Name = "rough_16_" + param_string + date_time.str() + ".txt";
+	string rough32Name = "rough_32_" + param_string + date_time.str() + ".txt";
+	string rough64Name = "rough_64_" + param_string + date_time.str() + ".txt";
+	string rough128Name = "rough_128_" + param_string + date_time.str() + ".txt";
 
-	string folder = "KPZ/sim_data_KPZ/";
+
+	string folder = "KPZ/sim_data_KPZ_long_big/";
 	//string folder = "";
 
     flog.open(folder+logName);
@@ -408,14 +405,13 @@ int main (int argc, char * argv[]){
     fprof.open(folder+profName);
     //fsects.open(folder+sectsName);
 
-    frough_64.open(folder+rough50Name);
-    frough_128.open(folder+rough70Name);
-    frough_256.open(folder+rough90Name);
-    frough_512.open(folder+rough110Name);
-    frough_1024.open(folder+rough130Name);
-    frough_2048.open(folder+rough150Name);
-    frough_4096.open(folder+rough170Name);
-    frough_8192.open(folder+rough190Name);
+    frough_4.open(folder+rough4Name);
+    frough_8.open(folder+rough8Name);
+    frough_16.open(folder+rough16Name);
+    frough_32.open(folder+rough32Name);
+    frough_64.open(folder+rough64Name);
+    frough_128.open(folder+rough128Name);
+
 
 
     //fvarhet.open("sim_data/"+varhetName);
@@ -424,7 +420,7 @@ int main (int argc, char * argv[]){
 
 
 
-    //cout<< "hi";
+    cout<< "hi";
     string line;
 	ifstream myfile ("KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt");
 	//cout<< "KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt";
@@ -747,22 +743,20 @@ int main (int argc, char * argv[]){
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demesh));
 	        //sects_hist.push_back(countSectors(deme));
 	
+	        rough_histe_4.push_back(getEdgeDeme(deme,4));
+	        rough_histe_8.push_back(getEdgeDeme(deme,8));
+	        rough_histe_16.push_back(getEdgeDeme(deme,16));
+	        rough_histe_32.push_back(getEdgeDeme(deme,32));
 	        rough_histe_64.push_back(getEdgeDeme(deme,64));
 	        rough_histe_128.push_back(getEdgeDeme(deme,128));
-	        rough_histe_256.push_back(getEdgeDeme(deme,256));
-	        rough_histe_512.push_back(getEdgeDeme(deme,512));
-	        rough_histe_1024.push_back(getEdgeDeme(deme,1024));
-	        rough_histe_2048.push_back(getEdgeDeme(deme,2048));
-	        rough_histe_4096.push_back(getEdgeDeme(deme,4096));
-	        rough_histe_8192.push_back(getEdgeDeme(deme,8192));
+
+	        rough_histf_4.push_back(getFrontDeme(deme,4));
+	        rough_histf_8.push_back(getFrontDeme(deme,8));
+	        rough_histf_16.push_back(getFrontDeme(deme,16));
+	        rough_histf_32.push_back(getFrontDeme(deme,32));
 	        rough_histf_64.push_back(getFrontDeme(deme,64));
 	        rough_histf_128.push_back(getFrontDeme(deme,128));
-	        rough_histf_256.push_back(getFrontDeme(deme,256));
-	        rough_histf_512.push_back(getFrontDeme(deme,512));
-	        rough_histf_1024.push_back(getFrontDeme(deme,1024));
-	        rough_histf_2048.push_back(getFrontDeme(deme,2048));
-	        rough_histf_4096.push_back(getFrontDeme(deme,4096));
-	        rough_histf_8192.push_back(getFrontDeme(deme,8192));
+
 
 
 
@@ -816,14 +810,13 @@ int main (int argc, char * argv[]){
     	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
     	//fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
 
-    	frough_64<< int(i*record_time) << ", "  << rough_histf_64[i]<< ", "  << rough_histe_64[i] << endl;
-    	frough_128<< int(i*record_time)<< ", "  << rough_histf_128[i]<< ", "  << rough_histe_128[i] << endl;
-    	frough_256<< int(i*record_time)<< ", "  << rough_histf_256[i] << ", "  << rough_histe_256[i] << endl;
-    	frough_512<< int(i*record_time) << ", "  << rough_histf_512[i]<< ", "  << rough_histe_512[i] << endl;
-    	frough_1024<< int(i*record_time)<< ", "  << rough_histf_1024[i] << ", "  << rough_histe_1024[i] << endl;
-    	frough_2048<< int(i*record_time)<< ", "  << rough_histf_2048[i] << ", "  << rough_histe_2048[i] << endl;
-    	frough_4096<< int(i*record_time)<< ", "  << rough_histf_4096[i] << ", "  << rough_histe_4096[i] << endl;
-    	frough_8192<< int(i*record_time)<< ", "  << rough_histf_8192[i] << ", "  << rough_histe_8192[i] << endl;
+    	frough_4<< int(i*record_time) << ", "  << rough_histf_4[i]<< ", "  << rough_histe_4[i] << endl;
+    	frough_8<< int(i*record_time)<< ", "  << rough_histf_8[i]<< ", "  << rough_histe_8[i] << endl;
+    	frough_16<< int(i*record_time)<< ", "  << rough_histf_16[i] << ", "  << rough_histe_16[i] << endl;
+    	frough_32<< int(i*record_time) << ", "  << rough_histf_32[i]<< ", "  << rough_histe_32[i] << endl;
+    	frough_64<< int(i*record_time)<< ", "  << rough_histf_64[i] << ", "  << rough_histe_64[i] << endl;
+    	frough_128<< int(i*record_time)<< ", "  << rough_histf_128[i] << ", "  << rough_histe_128[i] << endl;
+    	
 
 
 
@@ -851,14 +844,13 @@ int main (int argc, char * argv[]){
     flog.close();
     fprof.close();
 
+    frough_4.close();
+    frough_8.close();
+    frough_16.close();
+    frough_32.close();
     frough_64.close();
     frough_128.close();
-    frough_256.close();
-    frough_512.close();
-    frough_1024.close();
-    frough_2048.close();
-    frough_4096.close();
-    frough_8192.close();
+
 
 
 

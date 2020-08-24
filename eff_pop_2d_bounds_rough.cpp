@@ -13,14 +13,14 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 100000000;
-unsigned int n_gens = 300;
-//float h_thresh = .1;
-const int n_demesh = 150; 
-const int n_demesw =8250; 
+unsigned long K  = 1000000;
+unsigned int n_gens = 10;
+float h_thresh = .3;
+const int n_demesh = 120; 
+const int n_demesw = 80; 
 const unsigned int n_spec = 2;
 float M = 0.25;
-float B =0;
+float B = 0;
 float g0 = 0.01;
 unsigned long prof_hist = 0;
 unsigned long fast_samp_flag = 1;
@@ -41,7 +41,7 @@ double sumDeme(long double arr[n_demesh][n_demesw][n_spec], int arrSize){
 		};
 	};
 
-	return sum/(K*n_demesw);
+	return sum/K;
 
 
 
@@ -87,6 +87,54 @@ float calcHet(long double arr[n_demesh][n_demesw][n_spec], const int arrSize){
 
 }
 
+float calcRoughness(long double arr[n_demesw][n_spec]){
+	long double freqs[n_demesw];
+	float sumFreq=0;
+	float sumDiffs=0;
+
+	for(int i=0;i<n_demesw;i++){
+
+		freqs[i] = arr[i][0]/ (arr[i][0]+arr[i][1]);
+		sumFreq+=arr[i][0]/ (arr[i][0]+arr[i][1]);
+	}
+
+	for(int i=0;i<n_demesw;i++){
+		sumDiffs+= abs(freqs[i] - sumFreq/n_demesw);
+
+	}
+
+	return sumDiffs/n_demesw;
+
+}
+int calcBoundPos(long double arr[n_demesw][n_spec]){
+	long double freqs[n_demesw];
+	float sumFreq=0;
+	int boundDeme=0;
+	float sumDiffs=0;
+
+	for(int i=0;i<n_demesw;i++){
+
+		freqs[i] = arr[i][0]/ (arr[i][0]+arr[i][1]);
+		
+	}
+	int i =1;
+	while((boundDeme==0)&&(i<n_demesw)){
+	//for(int i=1;i<n_demesw;i++){
+		if ((freqs[i]>.5 &&freqs[i-1]<.5) || (freqs[i]<.5 &&freqs[i-1]>.5)){
+			boundDeme = i;
+
+
+		}
+		i+=1;
+
+	}
+
+	return boundDeme;
+
+}
+
+
+
 int calcLastRow(long double arr[n_demesh][n_demesw][n_spec]){
 	int lastrow = 0;
 	for(int i = 0; i < n_demesh; i++){
@@ -100,10 +148,12 @@ int calcLastRow(long double arr[n_demesh][n_demesw][n_spec]){
 
 			}
 
+
 		}
 		if (row_tot ==n_demesw){
 			//std::cout<< row_tot<<std::endl;
 			lastrow=i;
+
 
 
 		}
@@ -111,123 +161,8 @@ int calcLastRow(long double arr[n_demesh][n_demesw][n_spec]){
 
 	return lastrow;
 
-}
-
-
-int getFrontDeme(long double arr[n_demesh][n_demesw][n_spec], int L){
-
-	long double N = n_demesw;
-	 
-	long double frontDiffs=0;
-	long double fronts[L];
-
-	for(int j =0 ; j< L; j++){
-
-		int frontFound=0;
-		for(int i = 1; i < n_demesh; i++){
-			if( (arr[i][int(n_demesw/2)- int(L/2)+j][0]+arr[i][int(n_demesw/2)- int(L/2)+j][1]>(.5*K)) &&(frontFound==0)){
-				fronts[j]=i;
-
-
-			}
-
-
-		}
-	}
-	long double frontSum = 0; 
-	for(int j =0 ; j< L; j++){
-		frontSum+= fronts[j];
-
-	}
-
-	for(int j =0 ; j< L; j++){
-		frontDiffs+=  pow((fronts[j] - (frontSum/L)  ),2);
-
-	}
-
-
-
-	//long double front_rough = frontDiffs/N;
-	
-	return frontDiffs;
 
 }
-
-int getEdgeDeme(long double arr[n_demesh][n_demesw][n_spec], int L){
-
-	long double N = n_demesw;
-	 
-	long double frontDiffs=0;
-	long double fronts[L];
-
-	for(int j =0 ; j< L; j++){
-
-		int frontFound=0;
-		for(int i = 1; i < n_demesh; i++){
-			if( (arr[i][int(n_demesw/2)- int(L/2)+j][0]+arr[i][int(n_demesw/2)- int(L/2)+j][1]>0) &&(frontFound==0)){
-				fronts[j]=i;
-
-
-			}
-
-
-		}
-	}
-	long double frontSum = 0; 
-	for(int j =0 ; j< L; j++){
-		frontSum+= fronts[j];
-
-	}
-
-	for(int j =0 ; j< L; j++){
-		frontDiffs+=  pow((fronts[j] - (frontSum/L)  ),2);
-
-	}
-
-
-
-	//long double front_rough = frontDiffs/N;
-	
-	return frontDiffs;
-
-}
-
-int countSectors(long double arr[n_demesh][n_demesw][n_spec]){
-	long double front[n_demesw];
-
-	for(int i = calcLastRow(arr); i < n_demesh; i++){
-
-		for(int j=0;j<n_demesw;j++){
-
-			if ((arr[i][j][0]+arr[i][j][1])>0){
-				front[j] = arr[i][j][0]/( arr[i][j][0]+ arr[i][j][1]);
-
-			}
-		}
-
-
-	}
-
-	int sectors = 0;
-
-	for(int i=1; i<n_demesw-1;i++){
-
-		if (((front[i]==0)|| (front[i]==1)) && (front[i-1]!=front[i])&& (front[i+1]!=front[i])){
-
-			sectors+=1;
-
-
-		}
-
-
-	}
-
-	return sectors+1;
-	
-}
-
-
-
 
 float calcVarHet(long double arr[n_demesh][n_demesw][n_spec], const int arrSize){
 
@@ -239,7 +174,7 @@ float calcVarHet(long double arr[n_demesh][n_demesw][n_spec], const int arrSize)
 
 
 	for(int i = 0; i < n_demesh; i++){
-		for(int j=0; j<n_demesw;j++){
+		for(int j=0; j<n_demesw; j++){
 
 			double deme_pop = arr[i][j][0]+arr[i][j][1];
 			//std::cout << i << "\n";
@@ -270,7 +205,7 @@ float calcVarHet(long double arr[n_demesh][n_demesw][n_spec], const int arrSize)
 		}
 	}
 
-	
+
 
 	return  varH/cnt;
 
@@ -288,7 +223,7 @@ int main (int argc, char * argv[]){
 	using namespace std;
 
 	int c;
-    while ((c = getopt (argc, argv, "K:Z:B:T:M:G:F")) != -1)
+    while ((c = getopt (argc, argv, "K:Z:B:T:M:G:R:F")) != -1)
     {
         if (c == 'K')
             K  = atoi(optarg); // carrying capacity
@@ -296,19 +231,23 @@ int main (int argc, char * argv[]){
             prof_hist = atoi(optarg); //keep track of profile through time 
         else if (c == 'B')
             B = atof(optarg); // cooperativity
-        //else if (c == 'T')
-        //    h_thresh = atof(optarg); // cooperativity
+        else if (c == 'T')
+            h_thresh = atof(optarg); // cooperativity
         else if (c == 'M')
             M = atof(optarg); // migration probability
         else if (c == 'G')
             g0 = atof(optarg); // growth rate
         else if (c == 'F')
+            freeze_flag = atoi(optarg); 
+        else if (c == 'F')
             fast_samp_flag = atoi(optarg); // growth rate
 
     }
-    
-
-    //n_gens = (B+1)*K;
+    //n_gens = 50*K;
+    /*if (B >= 2.0)
+    	n_gens = 50*K;
+    else
+        n_gens = 25*K;*/
 
 
 	const gsl_rng_type * T;
@@ -324,10 +263,10 @@ int main (int argc, char * argv[]){
 
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
-	int n_data = 300;
-	int record_time = int(n_gens/n_data);
-	//int record_time = 10;
-	//int n_data = int(n_gens/record_time);
+	//int n_data = 1000;
+	//int record_time = int(n_gens/n_data);
+	int record_time = 10;
+	int n_data = int(n_gens/record_time);
 	//int dt = 0;
 
 	double pop_shift = 0.0;
@@ -337,28 +276,24 @@ int main (int argc, char * argv[]){
 
 	vector <double> pop_hist;
 	vector <double> het_hist;
-	vector <double> sects_hist;
-	vector <double> rough_histe_64;
-	vector <double> rough_histe_128;
-	vector <double> rough_histe_256;
-	vector <double> rough_histe_512;
-	vector <double> rough_histe_1024;
-	vector <double> rough_histe_2048;
-	vector <double> rough_histe_4096;
-	vector <double> rough_histe_8192;
-	vector <double> rough_histf_64;
-	vector <double> rough_histf_128;
-	vector <double> rough_histf_256;
-	vector <double> rough_histf_512;
-	vector <double> rough_histf_1024;
-	vector <double> rough_histf_2048;
-	vector <double> rough_histf_4096;
-	vector <double> rough_histf_8192;
-	
+	vector <double> rough_0;
+	vector <double> rough_10;
+	vector <double> rough_20;
+	vector <double> rough_30;
+	vector <double> rough_40;
+	vector <double> rough_50;
+	vector <double> pos_0;
+	vector <double> pos_10;
+	vector <double> pos_20;
+	vector <double> pos_30;
+	vector <double> pos_40;
+	vector <double> pos_50;
+
+
 	//vector <double> varhet_hist;
 
 	//data files
-	ofstream flog, fpop, fhet, fprof,fsects,frough_64,frough_128,frough_256,frough_512,frough_1024, frough_2048,frough_4096,frough_8192;
+	ofstream flog, fpop, fhet, fprof, frough,fpos;
 	time_t time_start;
 	clock_t c_init = clock();
 	struct tm * timeinfo;
@@ -388,86 +323,40 @@ int main (int argc, char * argv[]){
 	//string varhetName = "varhet_" + param_string +  date_time.str() + ".txt";
 	string popName = "pop_"+ param_string +  date_time.str() + ".txt";
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
-	string sectsName = "sects_" + param_string + date_time.str() + ".txt";
-
-	string rough50Name = "rough_64_" + param_string + date_time.str() + ".txt";
-	string rough70Name = "rough_128_" + param_string + date_time.str() + ".txt";
-	string rough90Name = "rough_256_" + param_string + date_time.str() + ".txt";
-	string rough110Name = "rough_512_" + param_string + date_time.str() + ".txt";
-	string rough130Name = "rough_1024_" + param_string + date_time.str() + ".txt";
-	string rough150Name = "rough_2048_" + param_string + date_time.str() + ".txt";
-	string rough170Name = "rough_4096_" + param_string + date_time.str() + ".txt";
-	string rough190Name = "rough_8192_" + param_string + date_time.str() + ".txt";
-
-	string folder = "KPZ/sim_data_KPZ/";
-	//string folder = "";
+	string roughName = "rough_" + param_string + date_time.str() + ".txt";
+	string posName = "pos_" + param_string + date_time.str() + ".txt";
+	string folder = "";
 
     flog.open(folder+logName);
     fhet.open(folder+hetName);
     fpop.open(folder+popName);
     fprof.open(folder+profName);
-    //fsects.open(folder+sectsName);
-
-    frough_64.open(folder+rough50Name);
-    frough_128.open(folder+rough70Name);
-    frough_256.open(folder+rough90Name);
-    frough_512.open(folder+rough110Name);
-    frough_1024.open(folder+rough130Name);
-    frough_2048.open(folder+rough150Name);
-    frough_4096.open(folder+rough170Name);
-    frough_8192.open(folder+rough190Name);
-
-
-    //fvarhet.open("sim_data/"+varhetName);
+    frough.open(folder+roughName);
+    fpos.open(folder+posName);
+    //fvarhet.open(varhetName);
 
 
 
 
 
-    //cout<< "hi";
-    string line;
-	ifstream myfile ("KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt");
-	//cout<< "KPZ/fisher_wave_files/K"+Kstr.str()+"_"+"B"+Bstr.str()+"_"+"fisher.txt";
-	
-
-	int j = 0;
-	if (myfile.is_open())
-  	{
 
 
-		while ( getline (myfile,line) )
-	    {
-	      string::iterator it;
-	      int index = 0;
-	      //for ( it = line.begin() ; it < line.end(); it++ ,index++)
-	      //{
-	       // cout << *it;
-	        //cout << line << '\n';
-	      //}
-	      deme[j][0][0] = stof(line);
-	      //cout << stoi(line);
-	      deme[j][0][1] = 0;
-	      j+=1;
-	      //cout << line[1,2,3];
 
-	   
-	    }
-	    myfile.close();
+	for(int i = 0; i < int(n_demesh*.5); i++){
+		for(int j = 0; j < int(n_demesw/2); j++){
 
-
-	}
-	
-
-
-	for(int i = 1; i < int(n_demesh); i++){
-		for(int j = 0; j < n_demesw; j++){
-
-			deme[i][j][0] = deme[i][0][0];
-			//deme[i][j][1] = .5*K;
-
+		deme[i][j][0] = .5*K;
 
 		}
 
+	}
+
+	for(int i = 0; i < int(n_demesh*.5); i++){
+		for(int j = int(n_demesw/2); j < n_demesw; j++){
+
+		deme[i][j][1] = K;
+
+		}
 
 	}
 	//initial population in middle
@@ -479,32 +368,27 @@ int main (int argc, char * argv[]){
 
     /*if (prof_hist !=0){
 		ostringstream strT;
-
 		string proftName = "prof_T_start_" + date_time.str() + ".txt";
 		ofstream fproft;
 	    fproft.open(proftName);
 	    for(int i = 0; i <n_demes; i++){
 	    	for(int j = 0; j <n_demes; j++){
 	    		fproft << i << ", " << j << ", " << deme[i][j][0] << ", " << deme[i][j][1] <<endl;
-
-
 	    	}
 		}
-
     }*/
 
 
 	for (int dt = 0 ; dt < n_gens; dt++ ){
 	//while(ht>h_thresh){
-
 		int d_start = 0;
 		int d_end= n_demesh ;
 		int empty_found=0;
 
 
 		for(int ii = 0; ii < int(n_demesh); ii++){
-			int full =0;
-			int empty=0;
+			int full = 0;
+			int empty = 0;
 			for(int jj = 0; jj < int(n_demesw); jj++){
 
 				deme_aux[ii][jj][0] = deme[ii][jj][0];
@@ -531,13 +415,14 @@ int main (int argc, char * argv[]){
 		if (d_end <n_demesh-10){
 			d_end =d_end+10;
 		}
+		//cout<<d_end<<endl;
 		//int i=0;
 		for( int j=0; j<n_demesw; j++){
 			int arr[2] = {d_start, j};
 			int neighb_vec[3][2] = {{0,1},{1,0},{0,-1}};
 			int neighbs[3][2];
 			//int pop_sum = fast_samp_flag;
-			
+
 			for(int ne=0; ne <3; ne++){
 				neighbs[ne][0] = (arr[0] + n_demesh+neighb_vec[ne][0]) % n_demesh;
 				neighbs[ne][1] = (arr[1] + n_demesw+neighb_vec[ne][1]) % n_demesw;
@@ -573,12 +458,12 @@ int main (int argc, char * argv[]){
 			deme[d_start][j][1] = new_cnt[2];
 		}
 
-		for(int i = d_start; i < d_end -1; i++){
+		for(int i = d_start+1; i < d_end-1 ; i++){
 			for(int j = 0; j < n_demesw; j++){
 				int arr[2] = {i, j};
 				int neighb_vec[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
 				int neighbs[4][2];
-				//int pop_sum = fast_samp_flag;
+				int pop_sum = 1;
 
 				for(int ne=0; ne <4; ne++){
 					neighbs[ne][0] = (arr[0] + n_demesh+neighb_vec[ne][0]) % n_demesh;
@@ -588,14 +473,12 @@ int main (int argc, char * argv[]){
 
 					/*int n_neighbs[4][2];
 					int ne_arr[2] = {neighbs[ne][0], neighbs[ne][1]};
-
 					
 					for(int ne_=0; ne_ <4; ne_++){
 						n_neighbs[ne_][0] = (ne_arr[0] + n_demes+neighb_vec[ne_][0]) % n_demes;
 						n_neighbs[ne_][1] = (ne_arr[1] + n_demes+neighb_vec[ne_][1]) % n_demes;
 						pop_sum+=deme_aux[n_neighbs[ne_][0]][n_neighbs[ne_][1]][0] + deme_aux[n_neighbs[ne_][0]][n_neighbs[ne_][1]][1];
 						pop_sum+=deme[n_neighbs[ne_][0]][n_neighbs[ne_][1]][0] + deme[n_neighbs[ne_][0]][n_neighbs[ne_][1]][1];
-
 					}*/
 
 
@@ -637,13 +520,13 @@ int main (int argc, char * argv[]){
 
 
 
-				
+
 
 			}
 		}
 
-		int i=d_end;
-		for( int j=0; j<n_demesw; j++){
+		int i=n_demesh-1;
+		for( int j=0; j<d_end; j++){
 			int arr[2] = {i, j};
 			int neighb_vec[3][2] = {{0,1},{-1,0},{0,-1}};
 			int neighbs[3][2];
@@ -685,15 +568,15 @@ int main (int argc, char * argv[]){
 			deme[i][j][1] = new_cnt[2];
 		}
 
-		
-
-		
 
 
 
 
-		if (sumDeme(deme,n_demesh) > .5*n_demesh){
-			int shift =  int(sumDeme(deme,n_demesh) - .5*n_demesh)+1;
+
+
+
+		if (sumDeme(deme,n_demesh) > .5*n_demesh*n_demesw){
+			int shift =  int(sumDeme(deme,n_demesh) - .5*n_demesh*n_demesw)+1;
 			//cout << shift << endl;
 			if ((shift< 0) == true){
 
@@ -714,8 +597,8 @@ int main (int argc, char * argv[]){
 					}
 				}
 			}
-			
-			
+
+
 	        for (int i = int(n_demesh - shift); i < n_demesh; i++){
 	        	for (int j = 0; j < n_demesw; j++){ 
 
@@ -727,7 +610,7 @@ int main (int argc, char * argv[]){
 	        }
 
 
-			
+
 
 	        pop_shift += shift;
 
@@ -740,30 +623,28 @@ int main (int argc, char * argv[]){
 
 		//cout << dt << endl;
 		//cout << record_time << endl;
-		
+
 		if (dt % record_time == 0){
 			//varhet_hist.push_back(calcVarHet(deme, n_demesh)); 
 			het_hist.push_back(calcHet(deme, n_demesh)); // Store heterozygosity
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demesh));
-	        //sects_hist.push_back(countSectors(deme));
-	
-	        rough_histe_64.push_back(getEdgeDeme(deme,64));
-	        rough_histe_128.push_back(getEdgeDeme(deme,128));
-	        rough_histe_256.push_back(getEdgeDeme(deme,256));
-	        rough_histe_512.push_back(getEdgeDeme(deme,512));
-	        rough_histe_1024.push_back(getEdgeDeme(deme,1024));
-	        rough_histe_2048.push_back(getEdgeDeme(deme,2048));
-	        rough_histe_4096.push_back(getEdgeDeme(deme,4096));
-	        rough_histe_8192.push_back(getEdgeDeme(deme,8192));
-	        rough_histf_64.push_back(getFrontDeme(deme,64));
-	        rough_histf_128.push_back(getFrontDeme(deme,128));
-	        rough_histf_256.push_back(getFrontDeme(deme,256));
-	        rough_histf_512.push_back(getFrontDeme(deme,512));
-	        rough_histf_1024.push_back(getFrontDeme(deme,1024));
-	        rough_histf_2048.push_back(getFrontDeme(deme,2048));
-	        rough_histf_4096.push_back(getFrontDeme(deme,4096));
-	        rough_histf_8192.push_back(getFrontDeme(deme,8192));
+	        rough_0.push_back(calcRoughness(deme[0]));
+	        rough_10.push_back(calcRoughness(deme[10]));
+	        rough_20.push_back(calcRoughness(deme[20]));
+	        rough_30.push_back(calcRoughness(deme[30]));
+	        rough_40.push_back(calcRoughness(deme[40]));
+	        rough_50.push_back(calcRoughness(deme[50]));
+	        pos_0.push_back(calcBoundPos(deme[0]));
+	        pos_10.push_back(calcBoundPos(deme[10]));
+	        pos_20.push_back(calcBoundPos(deme[20]));
+	        pos_30.push_back(calcBoundPos(deme[30]));
+	        pos_40.push_back(calcBoundPos(deme[40]));
+	        pos_50.push_back(calcBoundPos(deme[50]));
+	        int lastRow = calcLastRow(deme);
 
+
+
+	        //cout <<calcLastRow(deme)<<endl;
 
 
 	        //ht= calcHet(deme, n_demesh);
@@ -771,7 +652,7 @@ int main (int argc, char * argv[]){
 	        /*if ((het_hist[het_hist.size()-2]> prof_count*.1) && (het_hist[het_hist.size()-1]< prof_count*.1)  ){
 	        	ostringstream strh;
 	        	strh << prof_count*.1 ;
-	        	
+
 	        	string proftName = "prof_H"+ strh.str() + "_" +param_string + date_time.str() + ".txt";
 	        	ofstream fproft;
 	            fproft.open("sim_data/"+proftName);
@@ -804,29 +685,20 @@ int main (int argc, char * argv[]){
 
 
 		}
-	
+
 		//dt+=1;
 
 
     }
    //int n_data = int(dt/record_time);
+   //frough <<'time' <<  "0"  << ", " <<"10" << ", "<< "20" << ", " << "30"<< ", " << "40"<< ", " << "50" << ", "<<"front_8"<< ", "<<"front_6"<< ", "<<"front_4"<< ", "<<"front_2"<< ", "<<"front"<< ", "<<"front_deme" <<endl;
+
    for(int i=0;i < n_data;i++){
    		//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	fhet << int(i*record_time) << ", "  << het_hist[i] << endl;
     	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
-    	//fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
-
-    	frough_64<< int(i*record_time) << ", "  << rough_histf_64[i]<< ", "  << rough_histe_64[i] << endl;
-    	frough_128<< int(i*record_time)<< ", "  << rough_histf_128[i]<< ", "  << rough_histe_128[i] << endl;
-    	frough_256<< int(i*record_time)<< ", "  << rough_histf_256[i] << ", "  << rough_histe_256[i] << endl;
-    	frough_512<< int(i*record_time) << ", "  << rough_histf_512[i]<< ", "  << rough_histe_512[i] << endl;
-    	frough_1024<< int(i*record_time)<< ", "  << rough_histf_1024[i] << ", "  << rough_histe_1024[i] << endl;
-    	frough_2048<< int(i*record_time)<< ", "  << rough_histf_2048[i] << ", "  << rough_histe_2048[i] << endl;
-    	frough_4096<< int(i*record_time)<< ", "  << rough_histf_4096[i] << ", "  << rough_histe_4096[i] << endl;
-    	frough_8192<< int(i*record_time)<< ", "  << rough_histf_8192[i] << ", "  << rough_histe_8192[i] << endl;
-
-
-
+    	frough << int(i*record_time) << ", " << rough_0[i] << ", "<< rough_10[i] << ", "<< rough_20[i]<< ", " << rough_30[i]<< ", " << rough_40[i]<< ", " << rough_50[i]<<endl;
+    	fpos << int(i*record_time) << ", " << pos_0[i] << ", "<< pos_10[i] << ", "<< pos_20[i]<< ", " << pos_30[i]<< ", " << pos_40[i]<< ", " << pos_50[i]<<endl;
     }
 
     for(int i=0;i < n_demesh; i++){
@@ -850,18 +722,8 @@ int main (int argc, char * argv[]){
     fpop.close();
     flog.close();
     fprof.close();
-
-    frough_64.close();
-    frough_128.close();
-    frough_256.close();
-    frough_512.close();
-    frough_1024.close();
-    frough_2048.close();
-    frough_4096.close();
-    frough_8192.close();
-
-
-
+    frough.close();
+    fpos.close();
     //fvarhet.close();
 
     cout << "Finished!" << "\n";
@@ -876,10 +738,14 @@ int main (int argc, char * argv[]){
 
 
 
+
+
 	return 0;
-	
+
 
 
 
 
 }
+
+

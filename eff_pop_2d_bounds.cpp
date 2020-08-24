@@ -14,10 +14,10 @@
 
 
 unsigned long K  = 10000;
-unsigned int n_gens = 100000;
+unsigned int n_gens = 10000;
 //float h_thresh = .1;
-const int n_demesh = 100; 
-const int n_demesw =200; 
+const int n_demesh = 120; 
+const int n_demesw =20; 
 const unsigned int n_spec = 2;
 float M = 0.25;
 float B =0;
@@ -41,7 +41,7 @@ double sumDeme(long double arr[n_demesh][n_demesw][n_spec], int arrSize){
 		};
 	};
 
-	return sum/K;
+	return sum/(K*n_demesw);
 
 
 
@@ -243,7 +243,7 @@ int main (int argc, char * argv[]){
 	using namespace std;
 
 	int c;
-    while ((c = getopt (argc, argv, "K:Z:B:T:M:G:F")) != -1)
+    while ((c = getopt (argc, argv, "K:Z:B:W:M:G:F")) != -1)
     {
         if (c == 'K')
             K  = atoi(optarg); // carrying capacity
@@ -253,6 +253,7 @@ int main (int argc, char * argv[]){
             B = atof(optarg); // cooperativity
         //else if (c == 'T')
         //    h_thresh = atof(optarg); // cooperativity
+
         else if (c == 'M')
             M = atof(optarg); // migration probability
         else if (c == 'G')
@@ -279,7 +280,7 @@ int main (int argc, char * argv[]){
 
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
-	int n_data = 1000;
+	int n_data = 500;
 	int record_time = int(n_gens/n_data);
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
@@ -293,7 +294,7 @@ int main (int argc, char * argv[]){
 	vector <double> pop_hist;
 	vector <double> het_hist;
 	vector <double> sects_hist;
-	vector <double> rough_hist_10;
+	/*vector <double> rough_hist_10;
 	vector <double> rough_hist_20;
 	vector <double> rough_hist_30;
 	vector <double> rough_hist_40;
@@ -310,7 +311,7 @@ int main (int argc, char * argv[]){
 	vector <double> rough_hist_150;
 	vector <double> rough_hist_160;
 	vector <double> rough_hist_170;
-	vector <double> rough_hist_180;
+	vector <double> rough_hist_180;*/
 	//vector <double> varhet_hist;
 
 	//data files
@@ -335,7 +336,7 @@ int main (int argc, char * argv[]){
 	Mstr << M;
 	Bstr << B;
 	Gstr << g0;
-	string param_string =  "K"+Kstr.str()+"_M" + Mstr.str() + "_B" +Bstr.str() + "_G" +Gstr.str() +"_";
+	string param_string =  "K"+Kstr.str()+"_M" + Mstr.str() + "_B" +Bstr.str() + "_G" +Gstr.str() +"_"+"Width20_";
 
 
 
@@ -345,7 +346,7 @@ int main (int argc, char * argv[]){
 	string popName = "pop_"+ param_string +  date_time.str() + ".txt";
 	string profName = "prof_" + param_string + date_time.str() + ".txt";
 	string sectsName = "sects_" + param_string + date_time.str() + ".txt";
-	string rough10Name = "rough_10_" + param_string + date_time.str() + ".txt";
+	/*string rough10Name = "rough_10_" + param_string + date_time.str() + ".txt";
 	string rough20Name = "rough_20_" + param_string + date_time.str() + ".txt";
 	string rough30Name = "rough_30_" + param_string + date_time.str() + ".txt";
 	string rough40Name = "rough_40_" + param_string + date_time.str() + ".txt";
@@ -362,16 +363,16 @@ int main (int argc, char * argv[]){
 	string rough150Name = "rough_150_" + param_string + date_time.str() + ".txt";
 	string rough160Name = "rough_160_" + param_string + date_time.str() + ".txt";
 	string rough170Name = "rough_170_" + param_string + date_time.str() + ".txt";
-	string rough180Name = "rough_180_" + param_string + date_time.str() + ".txt";
-	//string folder = "sim_data_KPZ/";
-	string folder = "";
+	string rough180Name = "rough_180_" + param_string + date_time.str() + ".txt";*/
+	string folder = "sim_data/";
+	//string folder = "";
 
     flog.open(folder+logName);
     fhet.open(folder+hetName);
     fpop.open(folder+popName);
     fprof.open(folder+profName);
-    //fsects.open(folder+sectsName);
-    frough_10.open(folder+rough10Name);
+    fsects.open(folder+sectsName);
+    /*frough_10.open(folder+rough10Name);
     frough_20.open(folder+rough20Name);
     frough_30.open(folder+rough30Name);
     frough_40.open(folder+rough40Name);
@@ -388,7 +389,7 @@ int main (int argc, char * argv[]){
     frough_150.open(folder+rough150Name);
     frough_160.open(folder+rough160Name);
     frough_170.open(folder+rough170Name);
-    frough_180.open(folder+rough180Name);
+    frough_180.open(folder+rough180Name);*/
     //fvarhet.open("sim_data/"+varhetName);
 
 
@@ -631,8 +632,8 @@ int main (int argc, char * argv[]){
 
 
 
-		if (sumDeme(deme,n_demesh) > .5*n_demesh*n_demesw){
-			int shift =  int(sumDeme(deme,n_demesh) - .5*n_demesh*n_demesw)+1;
+		if (sumDeme(deme,n_demesh) > .5*n_demesh){
+			int shift =  int(sumDeme(deme,n_demesh) - .5*n_demesh)+1;
 			//cout << shift << endl;
 			if ((shift< 0) == true){
 
@@ -684,8 +685,8 @@ int main (int argc, char * argv[]){
 			//varhet_hist.push_back(calcVarHet(deme, n_demesh)); 
 			het_hist.push_back(calcHet(deme, n_demesh)); // Store heterozygosity
 	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demesh));
-	        //sects_hist.push_back(countSectors(deme));
-	        rough_hist_10.push_back(getFrontDeme(deme,10));
+	        sects_hist.push_back(countSectors(deme));
+	        /*rough_hist_10.push_back(getFrontDeme(deme,10));
 	        rough_hist_20.push_back(getFrontDeme(deme,20));
 	        rough_hist_30.push_back(getFrontDeme(deme,30));
 	        rough_hist_40.push_back(getFrontDeme(deme,40));
@@ -702,7 +703,7 @@ int main (int argc, char * argv[]){
 	        rough_hist_150.push_back(getFrontDeme(deme,150));
 	        rough_hist_160.push_back(getFrontDeme(deme,160));
 	        rough_hist_170.push_back(getFrontDeme(deme,170));
-	        rough_hist_180.push_back(getFrontDeme(deme,180));
+	        rough_hist_180.push_back(getFrontDeme(deme,180));*/
 
 	        //ht= calcHet(deme, n_demesh);
 
@@ -752,8 +753,8 @@ int main (int argc, char * argv[]){
    		//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	fhet << int(i*record_time) << ", "  << het_hist[i] << endl;
     	fpop << int(i*record_time) << ", "  << pop_hist[i] << endl;
-    	//fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
-    	frough_10<< int(i*record_time) << ", "  << rough_hist_10[i] << endl;
+    	fsects<< int(i*record_time) << ", "  << sects_hist[i] << endl;
+    	/*frough_10<< int(i*record_time) << ", "  << rough_hist_10[i] << endl;
     	frough_20<< int(i*record_time) << ", "  << rough_hist_20[i] << endl;
     	frough_30<< int(i*record_time) << ", "  << rough_hist_30[i] << endl;
     	frough_40<< int(i*record_time) << ", "  << rough_hist_40[i] << endl;
@@ -770,7 +771,7 @@ int main (int argc, char * argv[]){
     	frough_150<< int(i*record_time) << ", "  << rough_hist_150[i] << endl;
     	frough_160<< int(i*record_time) << ", "  << rough_hist_160[i] << endl;
     	frough_170<< int(i*record_time) << ", "  << rough_hist_170[i] << endl;
-    	frough_180<< int(i*record_time) << ", "  << rough_hist_180[i] << endl;
+    	frough_180<< int(i*record_time) << ", "  << rough_hist_180[i] << endl;*/
 
     }
 
@@ -795,7 +796,7 @@ int main (int argc, char * argv[]){
     fpop.close();
     flog.close();
     fprof.close();
-    frough_10.close();
+    /*frough_10.close();
     frough_20.close();
     frough_30.close();
     frough_40.close();
@@ -813,7 +814,7 @@ int main (int argc, char * argv[]){
     frough_160.close();
     frough_170.close();
     frough_180.close();
-    //fvarhet.close();
+    //fvarhet.close();*/
 
     cout << "Finished!" << "\n";
     cout << "Final Heterozygosity: " <<het_hist[n_data-1] << "\n";
