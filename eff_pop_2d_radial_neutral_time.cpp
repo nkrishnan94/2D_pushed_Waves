@@ -14,7 +14,7 @@
 
 
 unsigned long K  = 200;
-unsigned int n_gens = 650;
+unsigned int n_gens = 620;
 const int n_demes = 700;
 const unsigned int n_spec = 2;
 float M = 0.2;
@@ -51,7 +51,7 @@ int mutBubFlag = 0;
 
 
 int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
-	int buff = 20;
+	int buff = 30;
 	int check_pop = 0;
 	int emptyBounds = 1;
 
@@ -268,11 +268,11 @@ int main (int argc, char * argv[]){
 	double w_s2 = 1.0;
 	double w_avg;
 	double w_v;
-	//vector <double> pop_hist;
-	//vector <double> het_hist;
-	//vector <double> sect_hist;
-	//vector <double> mut_hist;
-	//vector <double> full_hist;
+	vector <double> pop_hist;
+	vector <double> het_hist;
+	vector <double> sect_hist;
+	vector <double> mut_hist;
+	vector <double> full_hist;
 	//vector <double> varhet_hist;
 
 	//data files
@@ -346,14 +346,15 @@ int main (int argc, char * argv[]){
 	//initial population in middle
 	//deme[int(n_demes/2)][int(n_demes/2)][0] = K;
 	//deme[int(n_demes/2)][int(n_demes/2)][1] = K;
-	int dt =0;
+	//int dt =0;
 
 
 
 
 
-	while(checkEmpty(deme, n_demes) == 1){
-	//for (int dt = 0 ; dt < n_gens; dt++ ){
+	//while(checkEmpty(deme, n_demes) == 1){
+	for (int dt = 0 ; dt < n_gens; dt++ ){
+		cout<<dt<<endl;
 
 		
 		for(int ii = 0; ii < int(n_demes); ii++){
@@ -507,10 +508,10 @@ int main (int argc, char * argv[]){
 
 				}
 
-			}
+			}*/
 
 			
-			int fullDeme=0;
+			/*int fullDeme=0;
 			int mutDeme=0;
 			for(int i =0; i<n_demes;i++){
 				for(int j = 0; j< n_demes;j++){
@@ -526,7 +527,7 @@ int main (int argc, char * argv[]){
 			//het_hist.push_back(calcHet(deme, n_demes)); 
 	        //pop_hist.push_back(pop_shift+sumDeme(deme,n_demes));
 	        //sect_hist.push_back(sectCounts);
-	        //mut_hist.push_back(mutDeme);
+	        //mut_hist.push_fback(mutDeme);
 	        //full_hist.push_back(fullDeme);
 
 	        if (prof_hist !=0){
@@ -549,7 +550,7 @@ int main (int argc, char * argv[]){
 		}
 	
 
-		dt+=1;
+		//dt+=1;
 
     }
 
@@ -558,7 +559,7 @@ int main (int argc, char * argv[]){
     	//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	//fhet << int(i*record_time) << " "  << het_hist[i] << endl;
     	//fpop << int(i*record_time) << " "  << pop_hist[i] << endl;
-    	//fsect << int(i*record_time) << " "  << sect_hist[i] << endl;
+    	fsect << int(i*record_time) << " "  << sect_hist[i] << endl;
     	//fmut << int(i*record_time) << ", "  << mut_hist[i] << endl;
     	//ffull << int(i*record_time) << ", "  << full_hist[i] << endl;
 
@@ -589,10 +590,11 @@ int main (int argc, char * argv[]){
     flog << n_gens << ", " <<  n_spec << ", " << g0 << ", " << M << ", " << n_demes << time_start<< run_time<< endl;
 
     //fhet.close();
-    //fpop.close();
+    //
+    fpop.close();
     flog.close();
     fprof.close();
-    //fsect.close();
+    fsect.close();
     //fmut.close();
     //ffull.close();
     //fvarhet.close();

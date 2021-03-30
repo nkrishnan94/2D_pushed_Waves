@@ -50,6 +50,29 @@ double sumDeme(long double arr[][n_demes][n_spec], int arrSize){
 int mutBubFlag = 0;
 
 
+bool checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
+	int check_pop = 0;
+	bool emptyBounds = TRUE;
+
+	for(int i = 0; i < arrSize; i++){
+
+
+		check_pop+= = arr[i][0][0]+arr[i][0][1];
+		check_pop+= = arr[0][i][0]+arr[0][i][1];
+		check_pop+= = arr[i][arrSize-1][0]+arr[i][arrSize-1][1];
+		check_pop+= = arr[arrSize-1][i][0]+arr[arrSize-1][i][1];
+
+	}
+	if (check_pop>0):
+		emptyBounds = FALSE;
+
+
+
+	return emptyBounds
+
+
+}
+
 int neighborMatch(long double arrNum[][n_demes][n_spec], long double arrGrid[][n_demes], int x, int y){
 	int mutSecFlag = 0;
 
@@ -326,8 +349,8 @@ int main (int argc, char * argv[]){
 
 
 
-
-	for (int dt = 0 ; dt < n_gens; dt++ ){
+	while(checkEmpty(deme, n_demes) == TRUE){
+	//for (int dt = 0 ; dt < n_gens; dt++ ){
 
 		
 		for(int ii = 0; ii < int(n_demes); ii++){
@@ -523,7 +546,7 @@ int main (int argc, char * argv[]){
 		}
 	
 
-
+		dt+=1;
 
     }
 
