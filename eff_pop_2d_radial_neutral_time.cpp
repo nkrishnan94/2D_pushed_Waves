@@ -14,8 +14,8 @@
 
 
 unsigned long K  = 200;
-unsigned int n_gens = 620;
-const int n_demes = 700;
+unsigned int n_gens = 650;
+const int n_demes = 600;
 const unsigned int n_spec = 2;
 float M = 0.2;
 float B = 4;
@@ -27,7 +27,7 @@ unsigned int ID_seed = 1;
 
 
 
-double sumDeme(long double arr[][n_demes][n_spec], int arrSize){
+double sumDeme(int arr[][n_demes][n_spec], int arrSize){
 			// sum of population
 	double sum = 0.0;
 	for (int i=0; i<n_demes; i++){
@@ -51,7 +51,7 @@ int mutBubFlag = 0;
 
 
 int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
-	int buff = 30;
+	int buff = 20;
 	int check_pop = 0;
 	int emptyBounds = 1;
 
@@ -75,12 +75,12 @@ int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
 
 }
 
-int neighborMatch(long double arrNum[][n_demes][n_spec], long double arrGrid[][n_demes], int x, int y){
+int neighborMatch(long double arrNum[n_demes][n_demes][n_spec], int arrGrid[][n_demes], int x, int y){
 	int mutSecFlag = 0;
 
 
 	//std::cout<<"hi"<<std::endl;
-	if ((arrGrid[x][y]==-1) && ((arrNum[x][y][1]/ (arrNum[x][y][0]+arrNum[x][y][1]))  > .8 ) ){
+	if ((arrGrid[x][y]==-1) && ((arrNum[x][y][1]/ (arrNum[x][y][0]+arrNum[x][y][1]) )  > .8 ) ){
 		arrGrid[x][y]=0;
 
 		if (arrNum[x-1][y][1]/ (arrNum[x-1][y][0]+arrNum[x-1][y][1]) >.8){
@@ -103,6 +103,7 @@ int neighborMatch(long double arrNum[][n_demes][n_spec], long double arrGrid[][n
 			arrGrid[x][y+1]=0;
 			mutBubFlag +=1;
 		}
+		
 		if ((arrNum[x][y+1][0]+arrNum[x][y+1][1] ==0) || (arrNum[x][y-1][0]+arrNum[x][y-1][1] ==0) || (arrNum[x+1][y][0]+arrNum[x+1][y][1] ==0) ||(arrNum[x-1][y][0]+arrNum[x-1][y][1] ==0)){
 			mutSecFlag+= 1;
 
@@ -213,7 +214,13 @@ float calcVarHet(long double arr[][n_demes][n_spec], const int arrSize){
 long double deme[n_demes][n_demes][n_spec] = {{0}};
 long double deme_aux[n_demes][n_demes][n_spec] = {{0}};
 
+//int * deme = new int[n_demes][n_demes][n_spec];
+//int * deme_aux = new int[n_demes][n_demes][n_spec];
 
+
+
+
+//std::vector<std::vector<std::vector<int> > > deme(n_demes, std::vector<std::vector<int> >(Y, std::vector<int>(Z)));
 
 
 
@@ -258,8 +265,8 @@ int main (int argc, char * argv[]){
 
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
-	int n_data = 10;
-	int record_time = int(n_gens/n_data);
+	//int n_data = 10;
+	int record_time = 10;
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
 
@@ -268,11 +275,11 @@ int main (int argc, char * argv[]){
 	double w_s2 = 1.0;
 	double w_avg;
 	double w_v;
-	vector <double> pop_hist;
-	vector <double> het_hist;
+	//vector <double> pop_hist;
+	//vector <double> het_hist;
 	vector <double> sect_hist;
-	vector <double> mut_hist;
-	vector <double> full_hist;
+	//vector <double> mut_hist;
+	//vector <double> full_hist;
 	//vector <double> varhet_hist;
 
 	//data files
@@ -309,8 +316,8 @@ int main (int argc, char * argv[]){
 	string sectName = "sect_" + param_string + date_time.str() + ".txt";
 	//string mutName = "mut_" + param_string + date_time.str() + ".txt";
 	//string fullName = "full_" + param_string + date_time.str() + ".txt";
-	string folder = "sim_data/";
-	//string folder = "";
+	//string folder = "sim_data/";
+	string folder = "";
 
 
     flog.open(folder+logName);
@@ -318,7 +325,7 @@ int main (int argc, char * argv[]){
     //fpop.open(folder+popName);
     fprof.open(folder + profName);
     //fvarhet.open(varhetName);
-    //fsect.open(folder + sectName);
+    fsect.open(folder + sectName);
     //fmut.open(folder + mutName);
     //ffull.open(folder + fullName);
 
@@ -346,15 +353,14 @@ int main (int argc, char * argv[]){
 	//initial population in middle
 	//deme[int(n_demes/2)][int(n_demes/2)][0] = K;
 	//deme[int(n_demes/2)][int(n_demes/2)][1] = K;
-	//int dt =0;
+	int dt =0;
 
 
 
 
 
-	//while(checkEmpty(deme, n_demes) == 1){
-	for (int dt = 0 ; dt < n_gens; dt++ ){
-		cout<<dt<<endl;
+	while(checkEmpty(deme, n_demes) == 1){
+	//for (int dt = 0 ; dt < n_gens; dt++ ){
 
 		
 		for(int ii = 0; ii < int(n_demes); ii++){
@@ -487,7 +493,7 @@ int main (int argc, char * argv[]){
 		//cout << record_time << endl;
 		if (dt % record_time == 0){
 
-			long double arrGrid[n_demes][n_demes] = {{0}};
+			int arrGrid[n_demes][n_demes] = {{0}};
 			for (int i=0; i<n_demes; i++){
 				for (int j=0; j<n_demes; j++){
 					arrGrid[i][j] = -1;
@@ -496,9 +502,9 @@ int main (int argc, char * argv[]){
 
 			}
 
-			/*int sectCounts = 0;
-			for(int i =0; i<n_demes;i++){
-				for(int j = 0; j< n_demes;j++){
+			int sectCounts = 0;
+			for(int i =1; i<n_demes-1;i++){
+				for(int j = 1; j< n_demes-1;j++){
 					if (arrGrid[i][j] == -1){
 						int mutBubFlag = 0;
 						sectCounts+= neighborMatch(deme, arrGrid, i,j );
@@ -508,7 +514,7 @@ int main (int argc, char * argv[]){
 
 				}
 
-			}*/
+			}
 
 			
 			/*int fullDeme=0;
@@ -526,8 +532,8 @@ int main (int argc, char * argv[]){
 			//varhet_hist.push_back(calcVarHet(deme, n_demes)); 
 			//het_hist.push_back(calcHet(deme, n_demes)); 
 	        //pop_hist.push_back(pop_shift+sumDeme(deme,n_demes));
-	        //sect_hist.push_back(sectCounts);
-	        //mut_hist.push_fback(mutDeme);
+	        sect_hist.push_back(sectCounts);
+	        //mut_hist.push_back(mutDeme);
 	        //full_hist.push_back(fullDeme);
 
 	        if (prof_hist !=0){
@@ -550,11 +556,11 @@ int main (int argc, char * argv[]){
 		}
 	
 
-		//dt+=1;
+		dt+=1;
 
     }
 
-   for(int i=0;i < n_data;i++){
+   for(int i=0;i < sect_hist.size();i++){
 
     	//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	//fhet << int(i*record_time) << " "  << het_hist[i] << endl;
@@ -590,14 +596,15 @@ int main (int argc, char * argv[]){
     flog << n_gens << ", " <<  n_spec << ", " << g0 << ", " << M << ", " << n_demes << time_start<< run_time<< endl;
 
     //fhet.close();
-    //
-    fpop.close();
+    //fpop.close();
     flog.close();
     fprof.close();
     fsect.close();
     //fmut.close();
     //ffull.close();
     //fvarhet.close();
+
+
 
     cout << "Finished!" << "\n";
     cout << "B: " <<B <<" init mut. "<< initMut <<  " seed: "<< ID_seed << endl;
