@@ -13,13 +13,13 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 200;
+unsigned long K  = 100;
 unsigned int n_gens = 650;
-const int n_demes = 600;
+const int n_demes = 150;
 const unsigned int n_spec = 2;
-float M = 0.2;
+float M = 0.1;
 float B = 4;
-float g0 = 0.4;
+float g0 = 0.5;
 int initMut = 100;
 unsigned long prof_hist = 0;
 unsigned long fast_samp_flag = 1;
@@ -51,7 +51,7 @@ int mutBubFlag = 0;
 
 
 int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
-	int buff = 20;
+	int buff = 5;
 	int check_pop = 0;
 	int emptyBounds = 1;
 
@@ -75,35 +75,36 @@ int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
 
 }
 
-int neighborMatch(long double arrNum[n_demes][n_demes][n_spec], int arrGrid[][n_demes], int x, int y){
+int neighborMatch(long double arrNum[n_demes][n_demes][n_spec], int (&grid)[n_demes][n_demes], int x, int y){
 	int mutSecFlag = 0;
+	float thresh =.95;
 
 
 	//std::cout<<"hi"<<std::endl;
-	if ((arrGrid[x][y]==-1) && ((arrNum[x][y][1]/ (arrNum[x][y][0]+arrNum[x][y][1]) )  > .8 ) ){
-		arrGrid[x][y]=0;
+	if ((grid[x][y]==-1) && ((arrNum[x][y][1]/ (arrNum[x][y][0]+arrNum[x][y][1]) )  > thresh ) ){
+		grid[x][y]=0;
 
-		if (arrNum[x-1][y][1]/ (arrNum[x-1][y][0]+arrNum[x-1][y][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x-1,y);
-			arrGrid[x-1][y]=0;
+		if (grid[x-1][y] == -1){
+			mutSecFlag+=neighborMatch(arrNum, grid, x-1,y);
+			grid[x-1][y]=0;
 			mutBubFlag +=1;
 		}
-		if (arrNum[x+1][y][1]/ (arrNum[x+1][y][0]+arrNum[x+1][y][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x+1,y);
-			arrGrid[x+1][y]=0;
+		if (grid[x+1][y] ==-1){
+			mutSecFlag+=neighborMatch(arrNum, grid, x+1,y);
+			grid[x+1][y]=0;
 			mutBubFlag +=1;
 		}
-		if (arrNum[x][y-1][1]/ (arrNum[x][y-1][0]+arrNum[x][y-1][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x,y-1);
-			arrGrid[x][y-1]=0;
+		if (grid[x][y-1]==-1){
+			mutSecFlag+=neighborMatch(arrNum, grid, x,y-1);
+			grid[x][y-1]=0;
 			mutBubFlag +=1;
 		}
-		if (arrNum[x][y+1][1]/ (arrNum[x][y+1][0]+arrNum[x][y+1][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x,y+1);
-			arrGrid[x][y+1]=0;
+		if (grid[x][y+1] == -1){
+			mutSecFlag+=neighborMatch(arrNum, grid, x,y+1);
+			grid[x][y+1]=0;
 			mutBubFlag +=1;
 		}
-		
+
 		if ((arrNum[x][y+1][0]+arrNum[x][y+1][1] ==0) || (arrNum[x][y-1][0]+arrNum[x][y-1][1] ==0) || (arrNum[x+1][y][0]+arrNum[x+1][y][1] ==0) ||(arrNum[x-1][y][0]+arrNum[x-1][y][1] ==0)){
 			mutSecFlag+= 1;
 
@@ -266,7 +267,7 @@ int main (int argc, char * argv[]){
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
 	//int n_data = 10;
-	int record_time = 10;
+	int record_time = 50;
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
 
@@ -336,8 +337,8 @@ int main (int argc, char * argv[]){
 
 
 
-	for(int i = int(n_demes*.5)-20; i < int(n_demes*.5)+20; i++){
-		for(int j = int(n_demes*.5)-20; j < int(n_demes*.5)+20; j++){
+	for(int i = int(n_demes*.5)-10; i < int(n_demes*.5)+10; i++){
+		for(int j = int(n_demes*.5)-10; j < int(n_demes*.5)+10; j++){
 			if (sqrt(abs(i-int(n_demes*.5))*abs(i-int(n_demes*.5)) + abs(j-int(n_demes*.5))*abs(j-int(n_demes*.5))) < 20)
 			{
 				deme[i][j][1] = initMut;
@@ -496,7 +497,14 @@ int main (int argc, char * argv[]){
 			int arrGrid[n_demes][n_demes] = {{0}};
 			for (int i=0; i<n_demes; i++){
 				for (int j=0; j<n_demes; j++){
-					arrGrid[i][j] = -1;
+					//if (deme[i][j][0] +deme[i][j][1] >0){
+					//	arrGrid[i][j] = -1;
+
+					//}
+					if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1])) >.6){
+						arrGrid[i][j] = -1;
+
+					}
 
 				}
 
@@ -505,7 +513,9 @@ int main (int argc, char * argv[]){
 			int sectCounts = 0;
 			for(int i =1; i<n_demes-1;i++){
 				for(int j = 1; j< n_demes-1;j++){
+
 					if (arrGrid[i][j] == -1){
+
 						int mutBubFlag = 0;
 						sectCounts+= neighborMatch(deme, arrGrid, i,j );
 						//cout <<sectCounts<<endl;
@@ -559,6 +569,50 @@ int main (int argc, char * argv[]){
 		dt+=1;
 
     }
+	int arrGrid[n_demes][n_demes] = {{0}};
+	for (int i=0; i<n_demes; i++){
+		for (int j=0; j<n_demes; j++){
+			//if (deme[i][j][0] +deme[i][j][1] >0){
+			//	arrGrid[i][j] = -1;
+
+			//}
+			if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1]) ) >.6){
+				arrGrid[i][j] = -1;
+				cout<<"hi"<<endl;
+
+			}
+
+		}
+
+	}
+	ofstream fgrid;
+    fgrid.open("finalgrid.txt");
+    for(int i = 0; i <n_demes; i++){
+    	for(int j = 0; j <n_demes; j++){
+    		fgrid << i << " " << j << " " << arrGrid[i][j] <<endl;
+
+
+    	}
+	}
+
+	int sectCounts = 0;
+	for(int i =1; i<n_demes-1;i++){
+		for(int j = 1; j< n_demes-1;j++){
+
+			if (arrGrid[i][j] == -1){
+				//cout <<i << " " << j << " " << sectCounts<<endl;
+
+				int mutBubFlag = 0;
+				sectCounts+= neighborMatch(deme, arrGrid, i,j );
+
+
+			}
+
+		}
+
+	}
+	cout <<sectCounts<<endl;
+	sect_hist.push_back(sectCounts);
 
    for(int i=0;i < sect_hist.size();i++){
 
