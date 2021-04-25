@@ -13,17 +13,17 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 100;
+unsigned long K  = 100 ;
 unsigned int n_gens = 650;
-const int n_demes = 150;
+const int n_demes = 250;
 const unsigned int n_spec = 2;
-float M = 0.1;
-float B = 4;
+float M = 0.2;
+float B =  0;
 float g0 = 0.5;
-int initMut = 100;
+int initMut = 50;
 unsigned long prof_hist = 0;
 unsigned long fast_samp_flag = 1;
-unsigned int ID_seed = 1;
+unsigned int ID_seed = 2;
 
 
 
@@ -48,10 +48,42 @@ double sumDeme(int arr[][n_demes][n_spec], int arrSize){
 }
 
 int mutBubFlag = 0;
+int mutSecFlag;
+
+
+
+int checkMax(long double arr[][n_demes][n_spec], const int arrSize){
+	float distMax = 0;
+
+	for(int i = 0; i < arrSize; i++){
+		for(int j=0; j<arrSize;j++){
+			if ((arr[i][j][0]+arr[i][j][1]) > 0){
+				float dist =  pow(pow(abs(arrSize/2 - i),2) + pow(abs(arrSize/2 - j),2),.5);
+
+				if (dist>distMax){
+
+					distMax = dist;
+				}
+
+
+			}
+
+
+
+		}
+	}
+
+
+
+
+
+
+	return distMax;
+}
 
 
 int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
-	int buff = 5;
+	int buff = 2;
 	int check_pop = 0;
 	int emptyBounds = 1;
 
@@ -77,47 +109,46 @@ int checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
 
 int neighborMatch(long double arrNum[n_demes][n_demes][n_spec], int (&grid)[n_demes][n_demes], int x, int y){
 	int mutSecFlag = 0;
-	float thresh =.95;
+	//float thresh =.95;
+	grid[x][y] =1;
 
 
 	//std::cout<<"hi"<<std::endl;
-	if ((grid[x][y]==-1) && ((arrNum[x][y][1]/ (arrNum[x][y][0]+arrNum[x][y][1]) )  > thresh ) ){
-		grid[x][y]=0;
 
-		if (grid[x-1][y] == -1){
-			mutSecFlag+=neighborMatch(arrNum, grid, x-1,y);
-			grid[x-1][y]=0;
-			mutBubFlag +=1;
-		}
-		if (grid[x+1][y] ==-1){
-			mutSecFlag+=neighborMatch(arrNum, grid, x+1,y);
-			grid[x+1][y]=0;
-			mutBubFlag +=1;
-		}
-		if (grid[x][y-1]==-1){
-			mutSecFlag+=neighborMatch(arrNum, grid, x,y-1);
-			grid[x][y-1]=0;
-			mutBubFlag +=1;
-		}
-		if (grid[x][y+1] == -1){
-			mutSecFlag+=neighborMatch(arrNum, grid, x,y+1);
-			grid[x][y+1]=0;
-			mutBubFlag +=1;
-		}
 
-		if ((arrNum[x][y+1][0]+arrNum[x][y+1][1] ==0) || (arrNum[x][y-1][0]+arrNum[x][y-1][1] ==0) || (arrNum[x+1][y][0]+arrNum[x+1][y][1] ==0) ||(arrNum[x-1][y][0]+arrNum[x-1][y][1] ==0)){
-			mutSecFlag+= 1;
+	if (grid[x-1][y] == 0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x-1,y);
+		grid[x-1][y]=1;
+		//mutBubFlag +=1;
+	}
+	if (grid[x+1][y] ==0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x+1,y);
+		grid[x+1][y]=1;
+		//utBubFlag +=1;
+	}
+	if (grid[x][y-1]==0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x,y-1);
+		grid[x][y-1]=1;
+		//mutBubFlag +=1;
+	}
+	if (grid[x][y+1] == 0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x,y+1);
+		grid[x][y+1]=1;
+		//mutBubFlag +=1;
+	}
 
-		}
+	if ( (grid[x][y+1] ==-2) || (grid[x][y-1] ==-2) || (grid[x+1][y] ==-2) || (grid[x-1][y] ==-2) ){
+		mutSecFlag+= 1;
+
 
 	}
 
-	if ((mutSecFlag>0)){
-		mutSecFlag=1;
+	//if ((mutSecFlag>0)){
+	//	mutSecFlag=1;
 
-	}
-	else
-		mutSecFlag=0;
+	//}
+	//else
+	//	mutSecFlag=0;
 
 
 	return mutSecFlag;
@@ -267,7 +298,7 @@ int main (int argc, char * argv[]){
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
 	//int n_data = 10;
-	int record_time = 50;
+	int record_time = 5;
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
 
@@ -276,9 +307,12 @@ int main (int argc, char * argv[]){
 	double w_s2 = 1.0;
 	double w_avg;
 	double w_v;
+	double mutThresh =0.9;
+	int minSize =5;
 	//vector <double> pop_hist;
 	//vector <double> het_hist;
 	vector <double> sect_hist;
+	vector <double> max_hist;
 	//vector <double> mut_hist;
 	//vector <double> full_hist;
 	//vector <double> varhet_hist;
@@ -324,9 +358,11 @@ int main (int argc, char * argv[]){
     flog.open(folder+logName);
     //fhet.open(folder+hetName);
     //fpop.open(folder+popName);
-    fprof.open(folder + profName);
+    //fprof.open(folder + profName);
     //fvarhet.open(varhetName);
-    fsect.open(folder + sectName);
+   	fsect.open(folder + sectName);
+    //fsect.open(folder + sectName)
+    //fsect.open(folder + "sector_results.txt" , ios_base::app);
     //fmut.open(folder + mutName);
     //ffull.open(folder + fullName);
 
@@ -337,8 +373,8 @@ int main (int argc, char * argv[]){
 
 
 
-	for(int i = int(n_demes*.5)-10; i < int(n_demes*.5)+10; i++){
-		for(int j = int(n_demes*.5)-10; j < int(n_demes*.5)+10; j++){
+	for(int i = int(n_demes*.5)-20; i < int(n_demes*.5)+20; i++){
+		for(int j = int(n_demes*.5)-20; j < int(n_demes*.5)+20; j++){
 			if (sqrt(abs(i-int(n_demes*.5))*abs(i-int(n_demes*.5)) + abs(j-int(n_demes*.5))*abs(j-int(n_demes*.5))) < 20)
 			{
 				deme[i][j][1] = initMut;
@@ -493,15 +529,16 @@ int main (int argc, char * argv[]){
 		//cout << dt << endl;
 		//cout << record_time << endl;
 		if (dt % record_time == 0){
+			//cout << checkMax(deme,n_demes) << endl;
 
 			int arrGrid[n_demes][n_demes] = {{0}};
 			for (int i=0; i<n_demes; i++){
 				for (int j=0; j<n_demes; j++){
-					//if (deme[i][j][0] +deme[i][j][1] >0){
-					//	arrGrid[i][j] = -1;
+					if (deme[i][j][0] +deme[i][j][1] ==0){
+						arrGrid[i][j] = -2;
 
-					//}
-					if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1])) >.6){
+					}
+					if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1])) <mutThresh){
 						arrGrid[i][j] = -1;
 
 					}
@@ -511,14 +548,18 @@ int main (int argc, char * argv[]){
 			}
 
 			int sectCounts = 0;
+			int rawSec;
 			for(int i =1; i<n_demes-1;i++){
 				for(int j = 1; j< n_demes-1;j++){
 
-					if (arrGrid[i][j] == -1){
+					if (arrGrid[i][j] == 0){
+						rawSec = neighborMatch(deme, arrGrid, i,j );
 
 						int mutBubFlag = 0;
-						sectCounts+= neighborMatch(deme, arrGrid, i,j );
-						//cout <<sectCounts<<endl;
+						if( rawSec> minSize){
+							sectCounts+= 1;
+
+						}
 
 					}
 
@@ -543,6 +584,8 @@ int main (int argc, char * argv[]){
 			//het_hist.push_back(calcHet(deme, n_demes)); 
 	        //pop_hist.push_back(pop_shift+sumDeme(deme,n_demes));
 	        sect_hist.push_back(sectCounts);
+	        max_hist.push_back( checkMax(deme,n_demes) );
+
 	        //mut_hist.push_back(mutDeme);
 	        //full_hist.push_back(fullDeme);
 
@@ -572,54 +615,64 @@ int main (int argc, char * argv[]){
 	int arrGrid[n_demes][n_demes] = {{0}};
 	for (int i=0; i<n_demes; i++){
 		for (int j=0; j<n_demes; j++){
-			//if (deme[i][j][0] +deme[i][j][1] >0){
-			//	arrGrid[i][j] = -1;
+			if (deme[i][j][0] +deme[i][j][1] ==0){
+				arrGrid[i][j] = -2;
 
-			//}
-			if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1]) ) >.6){
+			}
+			if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1])) <mutThresh){
 				arrGrid[i][j] = -1;
-				cout<<"hi"<<endl;
 
 			}
 
 		}
 
 	}
-	ofstream fgrid;
-    fgrid.open("finalgrid.txt");
-    for(int i = 0; i <n_demes; i++){
-    	for(int j = 0; j <n_demes; j++){
-    		fgrid << i << " " << j << " " << arrGrid[i][j] <<endl;
+
+	//ofstream fgrid;
+    //fgrid.open("finalgrid.txt");
+    //for(int i = 0; i <n_demes; i++){
+    //	for(int j = 0; j <n_demes; j++){
+   // 		fgrid << i << " " << j << " " << arrGrid[i][j] <<endl;
 
 
-    	}
-	}
+    //	}
+	//}
 
 	int sectCounts = 0;
+	int rawSec;
 	for(int i =1; i<n_demes-1;i++){
 		for(int j = 1; j< n_demes-1;j++){
 
-			if (arrGrid[i][j] == -1){
-				//cout <<i << " " << j << " " << sectCounts<<endl;
+			if (arrGrid[i][j] == 0){
+				rawSec = neighborMatch(deme, arrGrid, i,j );
 
 				int mutBubFlag = 0;
-				sectCounts+= neighborMatch(deme, arrGrid, i,j );
+				if (rawSec>0){
+					//cout <<rawSec<<endl;
 
+				}
+				
+				if( rawSec> minSize){
+					//cout <<rawSec<<endl;
+					sectCounts+= 1;
+
+				}
 
 			}
 
 		}
 
 	}
-	cout <<sectCounts<<endl;
-	sect_hist.push_back(sectCounts);
+	//cout <<sectCounts<<endl;
+	//sect_hist.push_back(sectCounts);
+	//fsect << B << " " << initMut << " " << ID_seed << " "<< sectCounts<<endl; 
 
-   for(int i=0;i < sect_hist.size();i++){
+	for(int i=0;i < sect_hist.size();i++){
 
     	//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
     	//fhet << int(i*record_time) << " "  << het_hist[i] << endl;
     	//fpop << int(i*record_time) << " "  << pop_hist[i] << endl;
-    	fsect << int(i*record_time) << " "  << sect_hist[i] << endl;
+    	fsect << max_hist[i] << " "  << sect_hist[i] << endl;
     	//fmut << int(i*record_time) << ", "  << mut_hist[i] << endl;
     	//ffull << int(i*record_time) << ", "  << full_hist[i] << endl;
 

@@ -323,7 +323,7 @@ int main (int argc, char * argv[]){
     flog.open(folder+logName);
     //fhet.open(folder+hetName);
     //fpop.open(folder+popName);
-    fprof.open(folder + profName);
+    //fprof.open(folder + profName);
     //fvarhet.open(varhetName);
     fsect.open(folder + sectName);
     //fmut.open(folder + mutName);
@@ -571,14 +571,14 @@ int main (int argc, char * argv[]){
 
     }
 
-    for(int i=0;i < n_demes; i++){
-    	for(int j =0;j < n_demes; j++){
+    //for(int i=0;i < n_demes; i++){
+    //	for(int j =0;j < n_demes; j++){
 
-    		fprof << i << " " << j<< " " << deme[i][j][0] << " "  << deme[i][j][1] << endl;
+    //		fprof << i << " " << j<< " " << deme[i][j][0] << " "  << deme[i][j][1] << endl;
 
-		}
+	//	}
 
-    }
+    //}
 
    
 
@@ -598,7 +598,7 @@ int main (int argc, char * argv[]){
     //fhet.close();
     //fpop.close();
     flog.close();
-    fprof.close();
+    //fprof.close();
     fsect.close();
     //fmut.close();
     //ffull.close();
