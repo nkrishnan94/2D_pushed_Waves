@@ -3,9 +3,9 @@ import glob
 import os 
 from datetime import datetime
 
-Bcoops = np.array([1,2,2,2.5,3,3.5,4])
-MutFs = np.array([10,25,50,75,100,125,150,175])
-samps = 10
+Bcoops = np.array([0,2.5,3,3.5,5])
+MutFs = np.array([30, 40, 50, 60, 70, 80, 90])
+samps = 500
 files= []
 time_str=datetime.now()
 flogstr ="submit_log_1"+".log"
@@ -31,18 +31,18 @@ for B,Bcoop in enumerate(Bcoops) :
 		f.write('#SBATCH --cpus-per-task=1\n')
 
 
-		f.write('#SBATCH --time=00:10:00\n')
+		f.write('#SBATCH --time=00:05:00\n')
 
 
 		f.write('#SBATCH --mem=5980mb\n')
-		f.write('#SBATCH --array=1-'+str(samps)+'\n')
+		f.write('#SBATCH --array=100-'+str(samps)+'\n')
 		f.write('#SBATCH -p skylake\n')
 		f.write('./etc/profile.d/modules.sh\n')
 		f.write('module purge \n')
 		f.write('module load rhel7/default-peta4\n')
 		f.write('echo "This is job" $SLURM_ARRAY_TASK_ID\n')
 		#f.write('g++ -o outanc eff_pop_2d_radial_neutral.cpp -std=c++11\n')
-		f.write('./out -T 650 -B '+str(Bcoop)+' -I'  +  str(MutF) +  ' -G $SLURM_ARRAY_TASK_ID  \n')
+		f.write('./out -B '+str(Bcoop)+' -U '  + str(MutF) +  ' -G $SLURM_ARRAY_TASK_ID  \n')
 		f.close()
 
 for f in files:

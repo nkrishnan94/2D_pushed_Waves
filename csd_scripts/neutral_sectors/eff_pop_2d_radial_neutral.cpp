@@ -13,21 +13,22 @@
 #include <gsl/gsl_randist.h>
 
 
-unsigned long K  = 200;
+unsigned long K  = 50 ;
 unsigned int n_gens = 650;
-const int n_demes = 680;
+const int n_demes = 1000;
 const unsigned int n_spec = 2;
-float M = 0.2;
-float B = 4;
-float g0 = 0.4;
-int initMut = 100;
+float M = 0.1;
+float B =  3;
+float g0 = 0.5;
+int initMut = 25;
+int initRad = 10;
 unsigned long prof_hist = 0;
 unsigned long fast_samp_flag = 1;
-unsigned int ID_seed = 1;
+unsigned int ID_seed = 2;
 
 
 
-double sumDeme(long double arr[][n_demes][n_spec], int arrSize){
+double sumDeme(int arr[][n_demes][n_spec], int arrSize){
 			// sum of population
 	double sum = 0.0;
 	for (int i=0; i<n_demes; i++){
@@ -48,72 +49,107 @@ double sumDeme(long double arr[][n_demes][n_spec], int arrSize){
 }
 
 int mutBubFlag = 0;
+int mutSecFlag;
 
 
-bool checkEmpty(long double arr[][n_demes][n_spec], const int arrSize) {
+
+int checkMax(std::vector<std::vector<std::vector<long double> > > arr, const int arrSize){
+	float distMax = 0;
+
+	for(int i = 0; i < arrSize; i++){
+		for(int j=0; j<arrSize;j++){
+			if ((arr[i][j][0]+arr[i][j][1]) > 0){
+				float dist =  pow(pow(abs(arrSize/2 - i),2) + pow(abs(arrSize/2 - j),2),.5);
+
+				if (dist>distMax){
+
+					distMax = dist;
+				}
+
+
+			}
+
+
+
+		}
+	}
+
+
+
+
+
+
+	return distMax;
+}
+
+
+int checkEmpty(std::vector<std::vector<std::vector<long double> > > arr, const int arrSize) {
+	int buff = 2;
 	int check_pop = 0;
-	bool emptyBounds = TRUE;
+	int emptyBounds = 1;
 
 	for(int i = 0; i < arrSize; i++){
 
 
-		check_pop+= = arr[i][0][0]+arr[i][0][1];
-		check_pop+= = arr[0][i][0]+arr[0][i][1];
-		check_pop+= = arr[i][arrSize-1][0]+arr[i][arrSize-1][1];
-		check_pop+= = arr[arrSize-1][i][0]+arr[arrSize-1][i][1];
+		check_pop+= arr[i][buff][0]+arr[i][buff][1];
+		check_pop+=  arr[buff][i][0]+arr[buff][i][1];
+		check_pop+=  arr[i][arrSize-1-buff][0]+arr[i][arrSize-1-buff][1];
+		check_pop+=  arr[arrSize-1-buff][i][0]+arr[arrSize-1-buff][i][1];
 
 	}
-	if (check_pop>0):
-		emptyBounds = FALSE;
+	if (check_pop>0){
+		emptyBounds = 0;
+	}
 
 
 
-	return emptyBounds
+	return emptyBounds;
 
 
 }
 
-int neighborMatch(long double arrNum[][n_demes][n_spec], long double arrGrid[][n_demes], int x, int y){
+int neighborMatch(std::vector<std::vector<std::vector<long double> > > arrNum, int (&grid)[n_demes][n_demes], int x, int y){
 	int mutSecFlag = 0;
+	//float thresh =.95;
+	grid[x][y] =1;
 
 
 	//std::cout<<"hi"<<std::endl;
-	if ((arrGrid[x][y]==-1) && ((arrNum[x][y][1]/ (arrNum[x][y][0]+arrNum[x][y][1]))  > .8 ) ){
-		arrGrid[x][y]=0;
 
-		if (arrNum[x-1][y][1]/ (arrNum[x-1][y][0]+arrNum[x-1][y][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x-1,y);
-			arrGrid[x-1][y]=0;
-			mutBubFlag +=1;
-		}
-		if (arrNum[x+1][y][1]/ (arrNum[x+1][y][0]+arrNum[x+1][y][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x+1,y);
-			arrGrid[x+1][y]=0;
-			mutBubFlag +=1;
-		}
-		if (arrNum[x][y-1][1]/ (arrNum[x][y-1][0]+arrNum[x][y-1][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x,y-1);
-			arrGrid[x][y-1]=0;
-			mutBubFlag +=1;
-		}
-		if (arrNum[x][y+1][1]/ (arrNum[x][y+1][0]+arrNum[x][y+1][1]) >.8){
-			mutSecFlag+=neighborMatch(arrNum, arrGrid, x,y+1);
-			arrGrid[x][y+1]=0;
-			mutBubFlag +=1;
-		}
-		if ((arrNum[x][y+1][0]+arrNum[x][y+1][1] ==0) || (arrNum[x][y-1][0]+arrNum[x][y-1][1] ==0) || (arrNum[x+1][y][0]+arrNum[x+1][y][1] ==0) ||(arrNum[x-1][y][0]+arrNum[x-1][y][1] ==0)){
-			mutSecFlag+= 1;
 
-		}
+	if (grid[x-1][y] == 0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x-1,y);
+		grid[x-1][y]=1;
+		//mutBubFlag +=1;
+	}
+	if (grid[x+1][y] ==0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x+1,y);
+		grid[x+1][y]=1;
+		//utBubFlag +=1;
+	}
+	if (grid[x][y-1]==0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x,y-1);
+		grid[x][y-1]=1;
+		//mutBubFlag +=1;
+	}
+	if (grid[x][y+1] == 0){
+		mutSecFlag+=neighborMatch(arrNum, grid, x,y+1);
+		grid[x][y+1]=1;
+		//mutBubFlag +=1;
+	}
+
+	if ( (grid[x][y+1] ==-2) || (grid[x][y-1] ==-2) || (grid[x+1][y] ==-2) || (grid[x-1][y] ==-2) ){
+		mutSecFlag+= 1;
+
 
 	}
 
-	if ((mutSecFlag>0)){
-		mutSecFlag=1;
+	//if ((mutSecFlag>0)){
+	//	mutSecFlag=1;
 
-	}
-	else
-		mutSecFlag=0;
+	//}
+	//else
+	//	mutSecFlag=0;
 
 
 	return mutSecFlag;
@@ -208,19 +244,27 @@ float calcVarHet(long double arr[][n_demes][n_spec], const int arrSize){
 
 }
 
-long double deme[n_demes][n_demes][n_spec] = {{0}};
-long double deme_aux[n_demes][n_demes][n_spec] = {{0}};
+//long double deme[n_demes][n_demes][n_spec] = {{0}};
+//long double deme_aux[n_demes][n_demes][n_spec] = {{0}};
+
+//int * deme = new int[n_demes][n_demes][n_spec];
+//int * deme_aux = new int[n_demes][n_demes][n_spec];
 
 
+
+
+std::vector<std::vector<std::vector<long double> > > deme(n_demes, std::vector<std::vector<long double> >(n_demes, std::vector<long double>(n_spec)));
+std::vector<std::vector<std::vector<long double> > > deme_aux(n_demes, std::vector<std::vector<long double> >(n_demes, std::vector<long double>(n_spec)));
 
 
 
 
 int main (int argc, char * argv[]){
 	using namespace std;
+	//cout <<"Hi"<< endl;
 
 	int c;
-    while ((c = getopt (argc, argv, "T:B:I:G:M")) != -1)
+    while ((c = getopt (argc, argv, "T:B:I:U:G:M")) != -1)
     {
         if (c == 'T')
             n_gens  = atoi(optarg); // carrying capacity
@@ -228,6 +272,8 @@ int main (int argc, char * argv[]){
             B = atof(optarg); // cooperativity
         else if (c == 'I')
             initMut = atoi(optarg); // migration probability
+        else if (c == 'U')
+            initRad = atoi(optarg); // migration probability
         else if (c == 'G')
             ID_seed  = atoi(optarg); // growth rate
         else if (c == 'M')
@@ -256,8 +302,8 @@ int main (int argc, char * argv[]){
 
 	double new_prob[n_spec + 1];
 	unsigned int new_cnt[n_spec + 1];
-	int n_data = 10;
-	int record_time = int(n_gens/n_data);
+	//int n_data = 10;
+	int record_time = 5;
 	//int record_time = 10;
 	//int n_data = int(n_gens/record_time);
 
@@ -266,11 +312,14 @@ int main (int argc, char * argv[]){
 	double w_s2 = 1.0;
 	double w_avg;
 	double w_v;
-	vector <double> pop_hist;
-	vector <double> het_hist;
+	double mutThresh =0.9;
+	int minSize =10;
+	//vector <double> pop_hist;
+	//vector <double> het_hist;
 	vector <double> sect_hist;
-	vector <double> mut_hist;
-	vector <double> full_hist;
+	vector <double> max_hist;
+	//vector <double> mut_hist;
+	//vector <double> full_hist;
 	//vector <double> varhet_hist;
 
 	//data files
@@ -292,7 +341,7 @@ int main (int argc, char * argv[]){
 	Kstr << K;
 	Mstr << M;
 	Bstr << B;
-	Ustr << initMut;
+	Ustr << initRad;
 	Istr << ID_seed;
 	Gstr << g0;
 	string param_string =  "K"+Kstr.str()+"_M" + Mstr.str() + "_B" +Bstr.str() + "_G" +Gstr.str() +"_U"+Ustr.str()+"_I"+Istr.str()+"_";
@@ -307,18 +356,21 @@ int main (int argc, char * argv[]){
 	string sectName = "sect_" + param_string + date_time.str() + ".txt";
 	//string mutName = "mut_" + param_string + date_time.str() + ".txt";
 	//string fullName = "full_" + param_string + date_time.str() + ".txt";
-	string folder = "sim_data/";
-	//string folder = "";
+	//string folder = "sim_data/";
+	string folder = "";
 
 
     flog.open(folder+logName);
-    fhet.open(folder+hetName);
+    //fhet.open(folder+hetName);
     //fpop.open(folder+popName);
     fprof.open(folder + profName);
     //fvarhet.open(varhetName);
-    fsect.open(folder + sectName);
+   	fsect.open(folder + sectName);
+    //fsect.open(folder + sectName)
+    //fsect.open(folder + "sector_results.txt" , ios_base::app);
     //fmut.open(folder + mutName);
     //ffull.open(folder + fullName);
+    //cout <<"Hi"<< endl;
 
 
 
@@ -327,9 +379,9 @@ int main (int argc, char * argv[]){
 
 
 
-	for(int i = int(n_demes*.5)-30; i < int(n_demes*.5)+30; i++){
-		for(int j = int(n_demes*.5)-30; j < int(n_demes*.5)+30; j++){
-			if (sqrt(abs(i-int(n_demes*.5))*abs(i-int(n_demes*.5)) + abs(j-int(n_demes*.5))*abs(j-int(n_demes*.5))) < 30)
+	for(int i = 0; i < int(n_demes); i++){
+		for(int j = 0; j < int(n_demes); j++){
+			if ( round(sqrt( abs(i-int(n_demes*.5))*abs(i-int(n_demes*.5)) + abs(j-int(n_demes*.5))*abs(j-int(n_demes*.5))) ) < initRad)
 			{
 				deme[i][j][1] = initMut;
 				deme[i][j][0] = K - initMut;
@@ -344,12 +396,13 @@ int main (int argc, char * argv[]){
 	//initial population in middle
 	//deme[int(n_demes/2)][int(n_demes/2)][0] = K;
 	//deme[int(n_demes/2)][int(n_demes/2)][1] = K;
+	int dt =0;
 
 
 
 
 
-	while(checkEmpty(deme, n_demes) == TRUE){
+	while(checkEmpty(deme, n_demes) == 1){
 	//for (int dt = 0 ; dt < n_gens; dt++ ){
 
 		
@@ -482,23 +535,37 @@ int main (int argc, char * argv[]){
 		//cout << dt << endl;
 		//cout << record_time << endl;
 		if (dt % record_time == 0){
+			//cout << checkMax(deme,n_demes) << endl;
 
-			long double arrGrid[n_demes][n_demes] = {{0}};
+			int arrGrid[n_demes][n_demes] = {{0}};
 			for (int i=0; i<n_demes; i++){
 				for (int j=0; j<n_demes; j++){
-					arrGrid[i][j] = -1;
+					if (deme[i][j][0] +deme[i][j][1] ==0){
+						arrGrid[i][j] = -2;
+
+					}
+					if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1])) <mutThresh){
+						arrGrid[i][j] = -1;
+
+					}
 
 				}
 
 			}
 
 			int sectCounts = 0;
-			for(int i =0; i<n_demes;i++){
-				for(int j = 0; j< n_demes;j++){
-					if (arrGrid[i][j] == -1){
+			int rawSec;
+			for(int i =1; i<n_demes-1;i++){
+				for(int j = 1; j< n_demes-1;j++){
+
+					if (arrGrid[i][j] == 0){
+						rawSec = neighborMatch(deme, arrGrid, i,j );
+
 						int mutBubFlag = 0;
-						sectCounts+= neighborMatch(deme, arrGrid, i,j );
-						//cout <<sectCounts<<endl;
+						if( rawSec> minSize){
+							sectCounts+= 1;
+
+						}
 
 					}
 
@@ -520,9 +587,11 @@ int main (int argc, char * argv[]){
 				}
 			}*/
 			//varhet_hist.push_back(calcVarHet(deme, n_demes)); 
-			het_hist.push_back(calcHet(deme, n_demes)); 
-	        pop_hist.push_back(pop_shift+sumDeme(deme,n_demes));
+			//het_hist.push_back(calcHet(deme, n_demes)); 
+	        //pop_hist.push_back(pop_shift+sumDeme(deme,n_demes));
 	        sect_hist.push_back(sectCounts);
+	        max_hist.push_back( checkMax(deme,n_demes) );
+
 	        //mut_hist.push_back(mutDeme);
 	        //full_hist.push_back(fullDeme);
 
@@ -549,13 +618,67 @@ int main (int argc, char * argv[]){
 		dt+=1;
 
     }
+	int arrGrid[n_demes][n_demes] = {{0}};
+	for (int i=0; i<n_demes; i++){
+		for (int j=0; j<n_demes; j++){
+			if (deme[i][j][0] +deme[i][j][1] ==0){
+				arrGrid[i][j] = -2;
 
-   for(int i=0;i < n_data;i++){
+			}
+			if ((deme[i][j][1] / (deme[i][j][0] + deme[i][j][1])) <mutThresh){
+				arrGrid[i][j] = -1;
+
+			}
+
+		}
+
+	}
+
+	//ofstream fgrid;
+    //fgrid.open("finalgrid.txt");
+    //for(int i = 0; i <n_demes; i++){
+    //	for(int j = 0; j <n_demes; j++){
+   // 		fgrid << i << " " << j << " " << arrGrid[i][j] <<endl;
+
+
+    //	}
+	//}
+
+	int sectCounts = 0;
+	int rawSec;
+	for(int i =1; i<n_demes-1;i++){
+		for(int j = 1; j< n_demes-1;j++){
+
+			if (arrGrid[i][j] == 0){
+				rawSec = neighborMatch(deme, arrGrid, i,j );
+
+				int mutBubFlag = 0;
+				if (rawSec>0){
+					//cout <<rawSec<<endl;
+
+				}
+				
+				if( rawSec> minSize){
+					//cout <<rawSec<<endl;
+					sectCounts+= 1;
+
+				}
+
+			}
+
+		}
+
+	}
+	//cout <<sectCounts<<endl;
+	//sect_hist.push_back(sectCounts);
+	//fsect << B << " " << initMut << " " << ID_seed << " "<< sectCounts<<endl; 
+	//cout <<"Hi"<<endl;
+	for(int i=0;i < sect_hist.size();i++){
 
     	//fvarhet << int(i*record_time) << ", "  << varhet_hist[i] << endl;
-    	fhet << int(i*record_time) << " "  << het_hist[i] << endl;
-    	fpop << int(i*record_time) << " "  << pop_hist[i] << endl;
-    	fsect << int(i*record_time) << " "  << sect_hist[i] << endl;
+    	//fhet << int(i*record_time) << " "  << het_hist[i] << endl;
+    	//fpop << int(i*record_time) << " "  << pop_hist[i] << endl;
+    	fsect << max_hist[i] << " "  << sect_hist[i] << endl;
     	//fmut << int(i*record_time) << ", "  << mut_hist[i] << endl;
     	//ffull << int(i*record_time) << ", "  << full_hist[i] << endl;
 
@@ -585,8 +708,8 @@ int main (int argc, char * argv[]){
     flog << "Number of generations, Number of species, Growth rate, Migration rate, B, Number of demes, Start time, Elapsed run time (secs_" << endl;
     flog << n_gens << ", " <<  n_spec << ", " << g0 << ", " << M << ", " << n_demes << time_start<< run_time<< endl;
 
-    fhet.close();
-    fpop.close();
+    //fhet.close();
+    //fpop.close();
     flog.close();
     fprof.close();
     fsect.close();
@@ -594,8 +717,10 @@ int main (int argc, char * argv[]){
     //ffull.close();
     //fvarhet.close();
 
+
+
     cout << "Finished!" << "\n";
-    //cout << "Final Heterozygosity: " <<het_hist[n_data-1] << "\n";
+    cout << "B: " <<B <<" init mut. "<< initMut <<  " seed: "<< ID_seed << endl;
     cout << "Finished in " << run_time << " seconds \n";
 
 	puts (buffer);
